@@ -39,7 +39,31 @@ def cost_fucntion(x,y,a):
 		f = sum(SCE)
 	else :
 		print('Dimension error')	
-	return f		
+	return f	
+
+def stop (cond, k, nb_iter, g, current_grad , fk , fkk):
+	''' stop is a function use both by the gradient descend method and 
+	Newton method. We have fuour stop criteria such as :
+
+	0 => a maximum number of iterations (k_max)
+	1 => a minimal  norm to reach (g_min)
+	2 => union of 0 and 1 conditions
+	3 => at each step we assure that f(x_k+1)< f(x_k)
+
+	This function return impossible if the first argument is different from this list.'''
+
+	if cond ==0 :
+		c_stop = nb_iter < k
+	elif cond ==1  :
+		c_stop = current_grad > g
+	elif cond==2 :
+		c_stop =  nb_iter < k and current_grad > g
+	elif cond==3 :
+		c_stop = fkk < fk
+			
+	else:
+		return 'impossible'	
+	return c_stop				
 	
 
 def grad (x,y,a):
@@ -54,36 +78,53 @@ def derivative_2 (x,a):
 	g_xa = vg(x,a)
 	return sum((-1*x*g_xa)**2)
 
+def iter_LM(Last_L, x,y, Last_A , last_F):
+	L = Last_L*10
+	dLM = -1 * (grad(x,y,Last_A )/ (derivative_2(x ,Last_A)+ L ))
+	next_f = cost_fucntion(x,y, Last_A + dLM)
 
-def LM (x,y,a,l,c_stop, k, g):
+	if next_f >  last_F :
+		Last_L = L
+		last_F = next_f
+		
+		return iter_LM(Last_L  , x,y, Last_A , last_F)
+	else :
+		# a_k+1
+		LL = Last_L/10
+		AA =  Last_A + dLM 
+		return AA, LL 	
+
+
+def LM (x,y,a,l,cond, k, g):
 	f0 = cost_fucntion(x,y,a)
-	current_a = a
-	current_cost = f0
-	currant_l = l
+	f00 = cost_fucntion(x,y,a) -1 # atificial initiation for cond 3
 	nb_iter =0
 	L =[l]
 	G =[grad(x,y,a)]
 	F= [f0]
-	if c_stop==1:
-		while nb_iter <k:
-			current_grad = grad(x,y,current_a )
-			current_D2 = derivative_2(x + currant_l ,current_a)
-			dLM = -1 * (current_grad/current_D2)
-			next_f = cost_fucntion(x,y, current_a  + dLM)
-			if next_f <  current_cost :
-				current_a =  current_a + dLM # a_k+1
-				currant_l = currant_l/10
-			else :
-				currant_l=currant_l*10	
+	A = [a]
+	c_stop = stop(cond,k,nb_iter,g,G[-1],  f0, f00)	
+	# def stop (cond, k, nb_iter, g, current_grad , fk , fkk):
+	while c_stop==True:
+		GG= grad(x,y,A[-1] )
+		dLM = -1 * (grad(x,y,A[-1] )/ (derivative_2(x ,A[-1])+ L[-1] ))
+		next_f = cost_fucntion(x,y, A[-1] + dLM)
+		if next_f <  F[-1] :
+			AA =  A[-1] + dLM # a_k+1
+			LL = L[-1]/10
+		else :
+			sol =iter_LM(L[-1], x,y,A[-1], next_f)
+			AA = sol[0]
+			LL =  sol[1]
 
-			L.append(currant_l)
-			G.append(current_grad)
-			F.append(next_f)
-			nb_iter +=1
+		L.append(LL)
+		G.append(GG)
+		F.append(next_f)
+		A.append(AA)
+		nb_iter +=1
+		c_stop = stop(cond,k,nb_iter,g,G[-1], F[-1], next_f)	
 			
-		return current_a, L, G, F
-	else :		
-		return 'Impossible'
+	return L, G, F, A
 
 
 
@@ -152,12 +193,10 @@ if Which_question==8:
 	x= np.arange(0,3+0.01,0.01)
 	y=random_data_set(x,2,0.01)
 	#def LM (x,y,a,l,c_stop, k, g):
-	LMf1 =LM (x,y,1.5,0.001, 1, 3, 1)
-	y_fit = vg(x,LMf1[0])
+	LMf1 =LM (x,y,1.5,0.001, 0, 30, 1)
+	y_fit = vg(x,LMf1[3][-1])
 
-
-	print(LMf1)[3]
-	
+	print(LMf1)[0]
 	fig = plt.figure() 
 	plt.scatter(x, y)
 	plt.plot(x,vg(x,2), c='black')
@@ -166,4 +205,8 @@ if Which_question==8:
 	plt.ylabel('y')
 	plt.show()
 	
-	# 
+if Which_question==9:
+	x= np.arange(0,3+0.01,0.01)
+	y=random_data_set(x,2,0.01)
+	#def LM (x,y,a,l,c_stop, k, g):
+	LMf1 =LM (x,y,1.5,0.001, 1, 10, 1)
