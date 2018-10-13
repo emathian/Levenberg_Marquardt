@@ -82,15 +82,17 @@ def iter_LM(Last_L, x,y, Last_A , last_F):
 	L = Last_L*10
 	dLM = -1 * (grad(x,y,Last_A )/ (derivative_2(x ,Last_A)+ L ))
 	next_f = cost_fucntion(x,y, Last_A + dLM)
-
+	print('okkkk')
 	if next_f >  last_F :
 		Last_L = L
 		last_F = next_f
-		
+		print('ok')
+
 		return iter_LM(Last_L  , x,y, Last_A , last_F)
 	else :
 		# a_k+1
 		LL = Last_L/10
+		dLM = -1 * (grad(x,y,Last_A )/ (derivative_2(x ,Last_A)+ LL ))
 		AA =  Last_A + dLM 
 		return AA, LL 	
 
@@ -116,7 +118,13 @@ def LM (x,y,a,l,cond, k, g):
 			sol =iter_LM(L[-1], x,y,A[-1], next_f)
 			AA = sol[0]
 			LL =  sol[1]
-
+			# LL = L[-1]*10
+			# while next_f <  F[-1]:
+			# 	dLM = -1 * (grad(x,y,Last_A )/ (derivative_2(x ,Last_A)+ LL ))
+			# 	next_f = cost_fucntion(x,y, Last_A + dLM)
+			# 	LL = LL*10
+			# AA = A[-1] +dLM
+			# LL = LL /10
 		L.append(LL)
 		G.append(GG)
 		F.append(next_f)
@@ -195,8 +203,9 @@ if Which_question==8:
 	#def LM (x,y,a,l,c_stop, k, g):
 	LMf1 =LM (x,y,1.5,0.001, 0, 30, 1)
 	y_fit = vg(x,LMf1[3][-1])
-
-	print(LMf1)[0]
+	print(LMf1[2][0])
+	print(LMf1[2][-1])
+	print(LMf1[3][-1])
 	fig = plt.figure() 
 	plt.scatter(x, y)
 	plt.plot(x,vg(x,2), c='black')
