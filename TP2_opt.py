@@ -1,5 +1,4 @@
 import matplotlib as mpl
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from math import sqrt
 from math import exp, expm1
@@ -9,12 +8,22 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
 import matplotlib.colors
 import numpy as np
-import decimal
+
 
 np.random.seed()
 def g(x,a):
 	return exp(-1*a*x)
 
+def g2(x,a1, a2):
+	return x**a1* exp(-1*a2*x)
+
+def vg2(x,a1, a2):
+	size_x =np.size(x)
+	y=np.zeros(size_x)
+	for i in range(0,size_x):
+		y[i] =x[i]**a1* exp(-1*a2*x[i])
+	return (y)	
+	
 def vg(x,a):
 	size_x =np.size(x)
 	y=np.zeros(size_x)
@@ -22,7 +31,7 @@ def vg(x,a):
 		current_x = x[i]
 		y[i] = exp(-1*a*current_x)
 	return (y)	
-	
+
 
 def random_data_set(x,a,b) : # B est l'amplitude du bruit
 
@@ -30,6 +39,13 @@ def random_data_set(x,a,b) : # B est l'amplitude du bruit
 	for i in range(0,np.size(x)):
 		current_x = x[i]
 		y[i] = g(current_x, a) + b*np.random.normal(0,1, 1)	
+	return (y)	
+
+def random_data_set2(x,a1,a2,b) : # B est l'amplitude du bruit
+
+	y=np.zeros(np.size(x))
+	for i in range(0,np.size(x)):
+		y[i] = g(x[i], a1, a2) + b*np.random.normal(0,1, 1)	
 	return (y)	
 
 def cost_fucntion(x,y,a):
@@ -74,6 +90,10 @@ def grad (x,y,a):
 	else :
 		print('Dimension error')	
 	return G
+
+
+def grad2 (x,y,a1,a2):
+	df_da1 = -1 * sum(y -( x**a1*exp(-a2*x)))	
 
 def derivative_2 (x,a):	
 	g_xa = vg(x,a)
@@ -234,7 +254,7 @@ if Which_question==9:
 
 
 if Which_question==10 :
-	x= np.arange(0,3+0.01,0.01)
+	x= np.arange(0,3+0.01,0.1)
 	
 	# B1 = list(np.arange(0, 1.2, 0.2))
 	# B2 = list(np.arange(0, 6, 1))
@@ -282,7 +302,49 @@ if Which_question==10 :
 	plt.xlabel('b')
 
 	plt.show()
-#return L, G, F, A
 
+if Which_question==11 :
+	x= np.arange(0,3+0.01,0.01)
+	
+	# B1 = list(np.arange(0, 1.2, 0.2))
+	# B2 = list(np.arange(0, 6, 1))
+	# B = B1 + B2[2:]
+	B = list(np.arange(0, 2, 0.1))
+	L_end  =[]
+	G_end = []
+	F_end = []
+	A_end =[]
+	B_end = []
+	sub = 2010
+	plt.figure(1)
+	c = 1
+	for i in B :
+		y=random_data_set(x,2,i)
+		S =LM (x,y,1.5,0.001, 2, 10, 0.001)
+		L_end.append (S[0][-1])
+		G_end.append (S[1][-1])
+		F_end.append(S[2][-1])
+		A_end.append(S[3][-1])
+		B_end.append(i)
+		y_fit = vg(x,S[3][-1])
+		plt.subplot(sub+c)
+		plt.plot(x, y,L_end, 'o-')
+		plt.plot(x,vg(x,2), c='black')
+		plt.plot(x, y_fit, c='red')
+		c+=1
+
+	plt.show()
+	
+	dic = {
+	'B' : B_end,
+    'lambda': L_end,
+    'norm gradient':G_end,
+ 	'f(a_k)':F_end,
+ 	'a ':A_end    	
+	}
+	df = pd.DataFrame(dic)
+	print(df)
+
+	
 
 
