@@ -31,9 +31,13 @@ def random_data_set(x,a,b) : # B est l'amplitude du bruit
 	return (y)	
 
 def cost_fucntion(x,y,a):
-	f = np.zeros(np.size(x))
-	for i in range(0,np.size(x)):
-		f[i] = 0.5*(y[i]-exp(-a*x[i]))^2
+	# size of x,y vectors are equal
+	g_xa = vg(x,a, np.siez(x))
+	if np.size(ylabel) == np.size(g_xa):
+		SCE = 0.5*((y - g_xa)**2) 
+		print(SCE)	
+	else :
+		print('Dimension error')		
 	return f
 
 def grad (x,y,a):
@@ -84,6 +88,7 @@ if Which_question==4:
 	plt.ylabel('y')
 	plt.show()
 
-
-# print(grad(X,y,2))
-# print('ok')
+if Which_question==5: 
+	x= np.arange(0,3+0.01,0.01)
+	y=random_data_set(X,2,0.01)
+	cost_fucntion(x,y,2)
