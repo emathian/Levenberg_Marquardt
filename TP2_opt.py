@@ -10,7 +10,7 @@ import matplotlib.colors
 import numpy as np
 import decimal
 
-
+np.random.seed(0)
 def g(x,a):
 	return exp(-1*a*x)
 
@@ -35,7 +35,7 @@ def cost_fucntion(x,y,a):
 	# size of x,y vectors are equal
 	g_xa = vg(x,a)
 	if np.size(y) == np.size(g_xa):
-		SCE = (y - g_xa)**2		
+		SCE = 0.5*(y - g_xa)**2		
 		f = sum(SCE)
 	else :
 		print('Dimension error')	
@@ -55,24 +55,35 @@ def derivative_2 (x,a):
 	return sum((-1*x*g_xa)**2)
 
 
-def LM (x,y,b,a,l,c_stop, k, g):
+def LM (x,y,a,l,c_stop, k, g):
 	f0 = cost_fucntion(x,y,a)
 	current_a = a
 	current_cost = f0
+	currant_l = l
 	nb_iter =0
-
+	L =[l]
+	G =[grad(x,y,a)]
+	F= [f0]
 	if c_stop==1:
 		while nb_iter <k:
 			current_grad = grad(x,y,current_a )
-			current_D2 = derivative_2(x,current_a)
+			current_D2 = derivative_2(x + currant_l ,current_a)
 			dLM = -1 * (current_grad/current_D2)
 			next_f = cost_fucntion(x,y, current_a  + dLM)
 			if next_f <  current_cost :
-				current_a =  current_a + DLM # a_k+1
-				l = l/10
+				current_a =  current_a + dLM # a_k+1
+				currant_l = currant_l/10
 			else :
-				l=l*10	
-			pass
+				currant_l=currant_l*10	
+
+			L.append(currant_l)
+			G.append(current_grad)
+			F.append(next_f)
+			nb_iter +=1
+			
+		return current_a, L, G, F
+	else :		
+		return 'Impossible'
 
 
 
@@ -137,7 +148,22 @@ if Which_question==7:
 	print(''' For  x=[0,3] by 0.1 and a =2.  we calculate the second order derivative of the function g 
 		   The result is  :''' , derivative_2(x,2))
 
+if Which_question==8:
+	x= np.arange(0,3+0.01,0.01)
+	y=random_data_set(x,2,0.01)
+	#def LM (x,y,a,l,c_stop, k, g):
+	LMf1 =LM (x,y,1.5,0.001, 1, 3, 1)
+	y_fit = vg(x,LMf1[0])
 
 
-
+	print(LMf1)[3]
 	
+	fig = plt.figure() 
+	plt.scatter(x, y)
+	plt.plot(x,vg(x,2), c='black')
+	plt.plot(x, y_fit, c='red')
+	plt.xlabel('x')
+	plt.ylabel('y')
+	plt.show()
+	
+	# 
