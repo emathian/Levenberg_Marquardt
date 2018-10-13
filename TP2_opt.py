@@ -4,13 +4,14 @@ from matplotlib import cm
 from math import sqrt
 from math import exp, expm1
 from numpy import random
+import pandas as pd
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
 import matplotlib.colors
 import numpy as np
 import decimal
 
-np.random.seed(0)
+np.random.seed()
 def g(x,a):
 	return exp(-1*a*x)
 
@@ -55,9 +56,9 @@ def stop (cond, k, nb_iter, g, current_grad , fk , fkk):
 	if cond ==0 :
 		c_stop = nb_iter < k
 	elif cond ==1  :
-		c_stop = current_grad > g
+		c_stop = current_grad < g
 	elif cond==2 :
-		c_stop =  nb_iter < k and current_grad > g
+		c_stop =  nb_iter < k and current_grad < g
 	elif cond==3 :
 		c_stop = fkk < fk
 			
@@ -82,11 +83,11 @@ def iter_LM(Last_L, x,y, Last_A , last_F):
 	L = Last_L*10
 	dLM = -1 * (grad(x,y,Last_A )/ (derivative_2(x ,Last_A)+ L ))
 	next_f = cost_fucntion(x,y, Last_A + dLM)
-	print('okkkk')
+	
 	if next_f >  last_F :
 		Last_L = L
 		last_F = next_f
-		print('ok')
+		
 
 		return iter_LM(Last_L  , x,y, Last_A , last_F)
 	else :
@@ -108,7 +109,7 @@ def LM (x,y,a,l,cond, k, g):
 	c_stop = stop(cond,k,nb_iter,g,G[-1],  f0, f00)	
 	# def stop (cond, k, nb_iter, g, current_grad , fk , fkk):
 	while c_stop==True:
-		GG= grad(x,y,A[-1] )
+		GG= abs(grad(x,y,A[-1] ))
 		dLM = -1 * (grad(x,y,A[-1] )/ (derivative_2(x ,A[-1])+ L[-1] ))
 		next_f = cost_fucntion(x,y, A[-1] + dLM)
 		if next_f <  F[-1] :
@@ -199,9 +200,9 @@ if Which_question==7:
 
 if Which_question==8:
 	x= np.arange(0,3+0.01,0.01)
-	y=random_data_set(x,2,0.01)
+	y=random_data_set(x,2,3)
 	#def LM (x,y,a,l,c_stop, k, g):
-	LMf1 =LM (x,y,1.5,0.001, 0, 30, 1)
+	LMf1 =LM (x,y,0.5,0.001, 0, 10, 1)
 	y_fit = vg(x,LMf1[3][-1])
 	print(LMf1[2][0])
 	print(LMf1[2][-1])
@@ -212,10 +213,76 @@ if Which_question==8:
 	plt.plot(x, y_fit, c='red')
 	plt.xlabel('x')
 	plt.ylabel('y')
+	plt.ylim(-0.5,1.5)
 	plt.show()
 	
+
 if Which_question==9:
 	x= np.arange(0,3+0.01,0.01)
 	y=random_data_set(x,2,0.01)
+	print(y[0:10])
 	#def LM (x,y,a,l,c_stop, k, g):
-	LMf1 =LM (x,y,1.5,0.001, 1, 10, 1)
+	LMf1 =LM (x,y,1.5,0.001, 2, 10, 0.001)
+	dic = {
+    'lambda': LMf1[0],
+    'norm gradient':LMf1[1],
+ 	'f(a_k)':LMf1[2],
+ 	'a ':LMf1[3],    	
+	}
+	df = pd.DataFrame(dic)
+	print(df)
+
+
+if Which_question==10 :
+	x= np.arange(0,3+0.01,0.01)
+	
+	# B1 = list(np.arange(0, 1.2, 0.2))
+	# B2 = list(np.arange(0, 6, 1))
+	# B = B1 + B2[2:]
+	B = list(np.arange(0, 2, 0.01))
+	L_end  =[]
+	G_end = []
+	F_end = []
+	A_end =[]
+	B_end = []
+	for i in B :
+		y=random_data_set(x,2,i)
+		S =LM (x,y,1.5,0.001, 2, 10, 0.001)
+		L_end.append (S[0][-1])
+		G_end.append (S[1][-1])
+		F_end.append(S[2][-1])
+		A_end.append(S[3][-1])
+		B_end.append(i)
+	dic = {
+	'B' : B_end,
+    'lambda': L_end,
+    'norm gradient':G_end,
+ 	'f(a_k)':F_end,
+ 	'a ':A_end    	
+	}
+	df = pd.DataFrame(dic)
+	print(df)
+
+	plt.figure(1)
+	plt.subplot(221)
+	plt.plot(B_end, L_end, 'o-')
+	plt.ylabel('lambda')
+
+	plt.subplot(222)	
+	plt.plot(B_end, G_end, 'o-')
+	plt.ylabel('Norm gradient')
+
+	plt.subplot(223)	
+	plt.plot(B_end, F_end, 'o-')
+	plt.ylabel('f(a_k)')
+
+	plt.subplot(224)	
+	plt.plot(B_end, A_end, 'o-')
+	plt.ylabel('a')
+	plt.xlabel('b')
+
+	plt.show()
+#return L, G, F, A
+
+
+
