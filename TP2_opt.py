@@ -14,7 +14,8 @@ import decimal
 def g(x,a):
 	return exp(-1*a*x)
 
-def vg(x,a, size_x):
+def vg(x,a):
+	size_x =np.size(x)
 	y=np.zeros(size_x)
 	for i in range(0,size_x):
 		current_x = x[i]
@@ -32,7 +33,7 @@ def random_data_set(x,a,b) : # B est l'amplitude du bruit
 
 def cost_fucntion(x,y,a):
 	# size of x,y vectors are equal
-	g_xa = vg(x,a, np.size(x))
+	g_xa = vg(x,a)
 	if np.size(y) == np.size(g_xa):
 		SCE = (y - g_xa)**2		
 		f = sum(SCE)
@@ -42,7 +43,7 @@ def cost_fucntion(x,y,a):
 	
 
 def grad (x,y,a):
-	g_xa = vg(x,a, np.size(x))
+	g_xa = vg(x,a)
 	if np.size(y) == np.size(g_xa):
 		G = sum((y-g_xa)*(x*g_xa))
 	else :
@@ -50,8 +51,14 @@ def grad (x,y,a):
 	return G
 
 def derivative_2 (x,a):	
+	g_xa = vg(x,a)
+	return sum((-1*x*g_xa)**2)
+
+
+def LM (x,y,b,a,l):	
 	g_xa = vg(x,a, np.size(x))
 	return sum((-1*x*g_xa)**2)
+
 
 ###############################################################################################
 #								MAIN														  #	
@@ -82,7 +89,7 @@ if Which_question==3:
 		   a -> such that g(x) = e^(-ax)
 		   b -> factor allowing to add noise in data		''')
 if Which_question==4: 
-	pritn('''Representation of a data set with the following parameters :\n
+	print('''Representation of a data set with the following parameters :\n
 			 a = 2 \n
 			 x in [0,3] by 0.01
 			 b = 0.01''')
@@ -90,7 +97,7 @@ if Which_question==4:
 	y=random_data_set(X,2,0.01)
 	fig = plt.figure() 
 	plt.scatter(X, y)
-	plt.plot(X,vg(X,2, np.size(X)), c = 'Green')
+	plt.plot(X,vg(X,2), c = 'Green')
 	plt.xlabel('x')
 	plt.ylabel('y')
 	plt.show()
