@@ -45,14 +45,13 @@ def grad (x,y,a):
 	g_xa = vg(x,a, np.size(x))
 	if np.size(y) == np.size(g_xa):
 		G = sum((y-g_xa)*(x*g_xa))
-		print('x', x[0:3])
-		print('y', y[0:3])
-		print('g_xa', g_xa[0:3])
-		print('(y-g_xa)',(y[0:3]-g_xa[0:3]))
-		print('x*g_xa',(x[0:3]*g_xa[0:3]))
-		print('(y-g_xa)*(x*g_xa)', (y[0:3]-g_xa[0:3])*(x[0:3]*g_xa[0:3]))
-		print(sum(G))
-	return g
+	else :
+		print('Dimension error')	
+	return G
+
+def derivative_2 (x,a):	
+	g_xa = vg(x,a, np.size(x))
+	return sum((-1*x*g_xa)**2)
 
 ###############################################################################################
 #								MAIN														  #	
@@ -100,11 +99,22 @@ if Which_question==5:
 	x= np.arange(0,3+0.01,0.01)
 	y=random_data_set(x,2,0.01)
 	print(''' For the random data set such as  y = g(2, x) + 0.01 * N(0,1)
-		and x=[0,3] by 0.1.  we calculate the cost function. The result is  :''' , cost_fucntion(x,y,2))
+		and x=[0,3] by 0.1.  we calculate the cost function, and a=2. The result is  :''' ,
+		 cost_fucntion(x,y,2))
 
 if Which_question==6:
 	x= np.arange(0,3+0.01,0.01)
 	y=random_data_set(x,2,0.01)
-	grad(x,y,2)
+	print(''' For the random data set such as  y = g(2, x) + 0.01 * N(0,1)
+		and x=[0,3] by 0.1, and a=2 .  we calculate the gradadient according to the function named grad.
+	    The result is  :''' , grad(x,y,2))
+
+if Which_question==7:
+	x= np.arange(0,3+0.01,0.01)
+	print(''' For  x=[0,3] by 0.1 and a =2.  we calculate the second order derivative of the function g 
+		   The result is  :''' , derivative_2(x,2))
+
+
+
 
 	
