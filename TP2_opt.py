@@ -55,9 +55,25 @@ def derivative_2 (x,a):
 	return sum((-1*x*g_xa)**2)
 
 
-def LM (x,y,b,a,l):	
-	g_xa = vg(x,a, np.size(x))
-	return sum((-1*x*g_xa)**2)
+def LM (x,y,b,a,l,c_stop, k, g):
+	f0 = cost_fucntion(x,y,a)
+	current_a = a
+	current_cost = f0
+	nb_iter =0
+
+	if c_stop==1:
+		while nb_iter <k:
+			current_grad = grad(x,y,current_a )
+			current_D2 = derivative_2(x,current_a)
+			dLM = -1 * (current_grad/current_D2)
+			next_f = cost_fucntion(x,y, current_a  + dLM)
+			if next_f <  current_cost :
+				current_a =  current_a + DLM # a_k+1
+				l = l/10
+			else :
+				l=l*10	
+			pass
+
 
 
 ###############################################################################################
