@@ -32,18 +32,26 @@ def random_data_set(x,a,b) : # B est l'amplitude du bruit
 
 def cost_fucntion(x,y,a):
 	# size of x,y vectors are equal
-	g_xa = vg(x,a, np.siez(x))
-	if np.size(ylabel) == np.size(g_xa):
-		SCE = 0.5*((y - g_xa)**2) 
-		print(SCE)	
+	g_xa = vg(x,a, np.size(x))
+	if np.size(y) == np.size(g_xa):
+		SCE = (y - g_xa)**2		
+		f = sum(SCE)
 	else :
-		print('Dimension error')		
-	return f
+		print('Dimension error')	
+	return f		
+	
 
 def grad (x,y,a):
-	g = np.zeros(np.size(x))
-	for i in range(0,np.size(x)):
-		g[i] = (y[i] - exp(-a*x[i]))(x[i]*exp(-a*x[i]))
+	g_xa = vg(x,a, np.size(x))
+	if np.size(y) == np.size(g_xa):
+		G = sum((y-g_xa)*(x*g_xa))
+		print('x', x[0:3])
+		print('y', y[0:3])
+		print('g_xa', g_xa[0:3])
+		print('(y-g_xa)',(y[0:3]-g_xa[0:3]))
+		print('x*g_xa',(x[0:3]*g_xa[0:3]))
+		print('(y-g_xa)*(x*g_xa)', (y[0:3]-g_xa[0:3])*(x[0:3]*g_xa[0:3]))
+		print(sum(G))
 	return g
 
 ###############################################################################################
@@ -75,7 +83,7 @@ if Which_question==3:
 		   a -> such that g(x) = e^(-ax)
 		   b -> factor allowing to add noise in data		''')
 if Which_question==4: 
-		pritn('''Representation of a data set with the following parameters :\n
+	pritn('''Representation of a data set with the following parameters :\n
 			 a = 2 \n
 			 x in [0,3] by 0.01
 			 b = 0.01''')
@@ -90,5 +98,13 @@ if Which_question==4:
 
 if Which_question==5: 
 	x= np.arange(0,3+0.01,0.01)
-	y=random_data_set(X,2,0.01)
-	cost_fucntion(x,y,2)
+	y=random_data_set(x,2,0.01)
+	print(''' For the random data set such as  y = g(2, x) + 0.01 * N(0,1)
+		and x=[0,3] by 0.1.  we calculate the cost function. The result is  :''' , cost_fucntion(x,y,2))
+
+if Which_question==6:
+	x= np.arange(0,3+0.01,0.01)
+	y=random_data_set(x,2,0.01)
+	grad(x,y,2)
+
+	
