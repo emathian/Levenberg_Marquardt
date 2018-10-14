@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import matplotlib as mpl
 from matplotlib import cm
 from math import sqrt
@@ -41,10 +42,10 @@ def derivative_2 (x,a):
 
 def derivative_2_f2(x,y,a1,a2, l):	
 	HLM = np.zeros((2, 2))
-	HLM[0][0] = -sum (np.dot((y-a1*x**(a1 -1) * exp(-a2 *x)), (a1 * x**(a1 -1) * exp(-a2 *x))) +	np.dot(  (x**(a1 -1)*(1 + a1 * log(x)) * exp(-a2 *x)) ,  (y - x**(a1) * exp (-a2*x)) ) ) + l
-	HLM[0][1] = sum( np.dot( (a1 * x ** (a1 -1) * exp(-a2 *x))  ,  (-a2 * x** a1 * exp (-a2*x))  ) )
-	HLM[1][0] = sum( np.dot( (a1 * x ** (a1 -1) * exp(-a2 *x))  ,  (-a2 * x** a1 * exp (-a2*x))  ) )
-	HLM[1][1] =- sum(  np.dot( (y + x**a1 * x *exp(-a2 *x)) , (-a2*x**a1 *exp(-a2 *x)) ) + np.dot(  (- x**a1 * exp (-a2 *x)  + x * exp(-a2 ) * a2 * x ** a1 )   ,   (y + x ** a1 * exp(-a2 *x))) ) + l
+	HLM[0][0] = -sum (np.dot((y-a1*x**(a1 -1) * np.exp(-a2 *x)), (a1 * x**(a1 -1) * np.exp(-a2 *x))) +	np.dot(  (x**(a1 -1)*(1 + a1 * np.log(x)) * np.exp(-a2 *x)) ,  (y - x**(a1) * np.exp (-a2*x)) ) ) + l
+	HLM[0][1] = sum( np.dot( (a1 * x ** (a1 -1) * np.exp(-a2 *x))  ,  (-a2 * x** a1 * np.exp (-a2*x))  ) )
+	HLM[1][0] = sum( np.dot( (a1 * x ** (a1 -1) * np.exp(-a2 *x))  ,  (-a2 * x** a1 * np.exp (-a2*x))  ) )
+	HLM[1][1] =- sum(  np.dot( (y + x**a1 * x *np.exp(-a2 *x)) , (-a2*x**a1 *np.exp(-a2 *x)) ) + np.dot(  (- x**a1 * np.exp (-a2 *x)  + x * np.exp(-a2 ) * a2 * x ** a1 )   ,   (y + x ** a1 * np.exp(-a2 *x))) ) + l
 	
 	return HLM
 
@@ -67,8 +68,8 @@ def grad (x,y,a):
 
 
 def grad2 (x,y,a1,a2):
-	df_da1 = -1 * sum(y -( x**a1*exp(-a2*x)))	* a1*x**(a1-1)*exp(-a2*x)
-	df_da2 = -1 * sum(y -( x**a1*exp(-a2*x)))	* -a2*x**(a1)*exp(-a2*x)
+	df_da1 = -1 * sum(y -( x**a1*np.exp(-a2*x))	* a1*x**(a1-1)*np.exp(-a2*x) )
+	df_da2 = -1 * sum(y -( x**a1*np.exp(-a2*x))	* -a2*x**(a1)*np.exp(-a2*x) )
 
 	norm_grad = sqrt(df_da1 **2  + df_da2 **2  )
 
@@ -471,6 +472,29 @@ if Which_question==12 :
 	plt.xlabel('x')
 	plt.ylabel('y')
 	plt.show()
+
+
+
+if Which_question==13 :
+	x= np.arange(0,5+0.01,0.01)
+	y=random_data_set2(x, 2, 3, 0.01 )
+	a1 = 2
+	a2 = 3
+	print (' We clculate the gradient of function 2 with a1 = 2, a2 = 3 , x  in (0,5)	: \n', 
+		   '- df / da1   = ' ,grad2(x,y,a1,a2)[0] , '\n',
+		   '- df / da2   = ' ,grad2(x,y,a1,a2)[1] , '\n',
+		   '- |g|   = ' ,grad2(x,y,a1,a2)[2] , '\n')
+
+if Which_question==14 :
+
+
+
+
+
+
+
+
+
 
 
 
