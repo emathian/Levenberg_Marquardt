@@ -93,8 +93,9 @@ def grad (x,y,a):
 
 
 def grad2 (x,y,a1,a2):
-	df_da1 = -1 * sum(y -( x**a1*exp(-a2*x)))	
-
+	df_da1 = -1 * sum(y -( x**a1*exp(-a2*x)))	* a1*x**(a1-1)*exp(-a2*x)
+	df_da2 = -1 * sum(y -( x**a1*exp(-a2*x)))	* -a2*x**(a1)*exp(-a2*x)
+	return df_da1 , df_da2
 def derivative_2 (x,a):	
 	g_xa = vg(x,a)
 	return sum((-1*x*g_xa)**2)
@@ -315,10 +316,9 @@ if Which_question==11 :
 	F_end = []
 	A_end =[]
 	B_end = []
-	sub = 2010
-	plt.figure(1)
-	c = 1
-	for i in B :
+	fig, axes = plt.subplots(nrows=10, ncols=2,  sharex=True, sharey=True)
+	for i, ax in enumerate(axes.flatten()):
+
 		y=random_data_set(x,2,i)
 		S =LM (x,y,1.5,0.001, 2, 10, 0.001)
 		L_end.append (S[0][-1])
@@ -327,14 +327,17 @@ if Which_question==11 :
 		A_end.append(S[3][-1])
 		B_end.append(i)
 		y_fit = vg(x,S[3][-1])
-		plt.subplot(sub+c)
-		plt.plot(x, y,L_end, 'o-')
-		plt.plot(x,vg(x,2), c='black')
-		plt.plot(x, y_fit, c='red')
-		c+=1
+	# 	plt.subplot(sub+c)
+		ax.scatter(x, y, s=0.6 )
+		ax.plot(x,vg(x,2), c='black')
+		ax.plot(x, y_fit, c='red')
+		ax.set_title(B[i])
 
-	plt.show()
+	plt.ylim(-0.5,2)
+	plt.xlim(0,3)
 	
+	plt.show()
+	print(len(L_end))
 	dic = {
 	'B' : B_end,
     'lambda': L_end,
@@ -343,7 +346,7 @@ if Which_question==11 :
  	'a ':A_end    	
 	}
 	df = pd.DataFrame(dic)
-	print(df)
+	#print(df)
 
 	
 
