@@ -11,42 +11,6 @@ import numpy as np
 
 
 np.random.seed()
-def g(x,a):
-	return exp(-1*a*x)
-
-def g2(x,a1, a2):
-	return x**a1* exp(-1*a2*x)
-
-def vg2(x,a1, a2):
-	size_x =np.size(x)
-	y=np.zeros(size_x)
-	for i in range(0,size_x):
-		y[i] =x[i]**a1* exp(-1*a2*x[i])
-	return (y)	
-	
-def vg(x,a):
-	size_x =np.size(x)
-	y=np.zeros(size_x)
-	for i in range(0,size_x):
-		current_x = x[i]
-		y[i] = exp(-1*a*current_x)
-	return (y)	
-
-
-def random_data_set(x,a,b) : # B est l'amplitude du bruit
-
-	y=np.zeros(np.size(x))
-	for i in range(0,np.size(x)):
-		current_x = x[i]
-		y[i] = g(current_x, a) + b*np.random.normal(0,1, 1)	
-	return (y)	
-
-def random_data_set2(x,a1,a2,b) : # B est l'amplitude du bruit
-
-	y=np.zeros(np.size(x))
-	for i in range(0,np.size(x)):
-		y[i] = g(x[i], a1, a2) + b*np.random.normal(0,1, 1)	
-	return (y)	
 
 def cost_fucntion(x,y,a):
 	# size of x,y vectors are equal
@@ -58,30 +22,29 @@ def cost_fucntion(x,y,a):
 		print('Dimension error')	
 	return f	
 
-def stop (cond, k, nb_iter, g, current_grad , fk , fkk):
-	''' stop is a function use both by the gradient descend method and 
-	Newton method. We have fuour stop criteria such as :
+def cost_fucntion2(x,y,a1, a2):
+	# size of x,y vectors are equal
+	g_xa = vg2(x,a1, a2)
+	if np.size(y) == np.size(g_xa):
+		SCE = 0.5*(y - g_xa)**2		
+		f = sum(SCE)
+	else :
+		print('Dimension error')	
+	return f	
 
-	0 => a maximum number of iterations (k_max)
-	1 => a minimal  norm to reach (g_min)
-	2 => union of 0 and 1 conditions
-	3 => at each step we assure that f(x_k+1)< f(x_k)
 
-	This function return impossible if the first argument is different from this list.'''
 
-	if cond ==0 :
-		c_stop = nb_iter < k
-	elif cond ==1  :
-		c_stop = current_grad < g
-	elif cond==2 :
-		c_stop =  nb_iter < k and current_grad < g
-	elif cond==3 :
-		c_stop = fkk < fk
-			
-	else:
-		return 'impossible'	
-	return c_stop				
-	
+def derivative_2 (x,a):	
+	g_xa = vg(x,a)
+	return sum((-1*x*g_xa)**2)
+
+
+def g(x,a):
+	return exp(-1*a*x)
+
+def g2(x,a1, a2):
+	return x**a1* exp(-1*a2*x)
+
 
 def grad (x,y,a):
 	g_xa = vg(x,a)
@@ -96,9 +59,7 @@ def grad2 (x,y,a1,a2):
 	df_da1 = -1 * sum(y -( x**a1*exp(-a2*x)))	* a1*x**(a1-1)*exp(-a2*x)
 	df_da2 = -1 * sum(y -( x**a1*exp(-a2*x)))	* -a2*x**(a1)*exp(-a2*x)
 	return df_da1 , df_da2
-def derivative_2 (x,a):	
-	g_xa = vg(x,a)
-	return sum((-1*x*g_xa)**2)
+
 
 def iter_LM(Last_L, x,y, Last_A , last_F):
 	L = Last_L*10
@@ -117,7 +78,6 @@ def iter_LM(Last_L, x,y, Last_A , last_F):
 		dLM = -1 * (grad(x,y,Last_A )/ (derivative_2(x ,Last_A)+ LL ))
 		AA =  Last_A + dLM 
 		return AA, LL 	
-
 
 def LM (x,y,a,l,cond, k, g):
 	f0 = cost_fucntion(x,y,a)
@@ -155,6 +115,66 @@ def LM (x,y,a,l,cond, k, g):
 		c_stop = stop(cond,k,nb_iter,g,G[-1], F[-1], next_f)	
 			
 	return L, G, F, A
+
+
+def random_data_set(x,a,b) : # B est l'amplitude du bruit
+
+	y=np.zeros(np.size(x))
+	for i in range(0,np.size(x)):
+		current_x = x[i]
+		y[i] = g(current_x, a) + b*np.random.normal(0,1, 1)	
+	return (y)	
+
+def random_data_set2(x,a1,a2,b) : # B est l'amplitude du bruit
+
+	y=np.zeros(np.size(x))
+	for i in range(0,np.size(x)):
+		y[i] = g(x[i], a1, a2) + b*np.random.normal(0,1, 1)	
+	return (y)	
+
+def stop (cond, k, nb_iter, g, current_grad , fk , fkk):
+	''' stop is a function use both by the gradient descend method and 
+	Newton method. We have fuour stop criteria such as :
+
+	0 => a maximum number of iterations (k_max)
+	1 => a minimal  norm to reach (g_min)
+	2 => union of 0 and 1 conditions
+	3 => at each step we assure that f(x_k+1)< f(x_k)
+
+	This function return impossible if the first argument is different from this list.'''
+
+	if cond ==0 :
+		c_stop = nb_iter < k
+	elif cond ==1  :
+		c_stop = current_grad < g
+	elif cond==2 :
+		c_stop =  nb_iter < k and current_grad < g
+	elif cond==3 :
+		c_stop = fkk < fk
+			
+	else:
+		return 'impossible'	
+	return c_stop				
+	
+
+def vg(x,a):
+	size_x =np.size(x)
+	y=np.zeros(size_x)
+	for i in range(0,size_x):
+		current_x = x[i]
+		y[i] = exp(-1*a*current_x)
+	return (y)	
+
+
+def vg2(x,a1, a2):
+	size_x =np.size(x)
+	y=np.zeros(size_x)
+	for i in range(0,size_x):
+		y[i] =x[i]**a1* exp(-1*a2*x[i])
+	return (y)	
+	
+
+
 
 
 
