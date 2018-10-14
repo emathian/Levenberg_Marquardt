@@ -42,10 +42,11 @@ def derivative_2 (x,a):
 
 def derivative_2_f2(x,y,a1,a2, l):	
 	HLM = np.zeros((2, 2))
-	HLM[0][0] = -sum (np.dot((y-a1*x**(a1 -1) * np.exp(-a2 *x)), (a1 * x**(a1 -1) * np.exp(-a2 *x))) +	np.dot(  (x**(a1 -1)*(1 + a1 * np.log(x)) * np.exp(-a2 *x)) ,  (y - x**(a1) * np.exp (-a2*x)) ) ) + l
-	HLM[0][1] = sum( np.dot( (a1 * x ** (a1 -1) * np.exp(-a2 *x))  ,  (-a2 * x** a1 * np.exp (-a2*x))  ) )
-	HLM[1][0] = sum( np.dot( (a1 * x ** (a1 -1) * np.exp(-a2 *x))  ,  (-a2 * x** a1 * np.exp (-a2*x))  ) )
-	HLM[1][1] =- sum(  np.dot( (y + x**a1 * x *np.exp(-a2 *x)) , (-a2*x**a1 *np.exp(-a2 *x)) ) + np.dot(  (- x**a1 * np.exp (-a2 *x)  + x * np.exp(-a2 ) * a2 * x ** a1 )   ,   (y + x ** a1 * np.exp(-a2 *x))) ) + l
+
+	HLM[0][0] = - (np.dot((y-a1*x**(a1 -1) * np.exp(-a2 *x)), (a1 * x**(a1 -1) * np.exp(-a2 *x))) +	np.dot(  (x**(a1 -1)*(1 + a1 * np.log(x)) * np.exp(-a2 *x)) ,  (y - x**(a1) * np.exp (-a2*x)) ) ) + l
+	HLM[0][1] = ( np.dot( (a1 * x ** (a1 -1) * np.exp(-a2 *x))  ,  (-a2 * x** a1 * np.exp (-a2*x))  ) )
+	HLM[1][0] = ( np.dot( (a1 * x ** (a1 -1) * np.exp(-a2 *x))  ,  (-a2 * x** a1 * np.exp (-a2*x))  ) )
+	HLM[1][1] = - (  np.dot( (y + x**a1 * x *np.exp(-a2 *x)) , (-a2*x**a1 *np.exp(-a2 *x)) ) + np.dot(  (- x**a1 * np.exp (-a2 *x)  + x * np.exp(-a2 ) * a2 * x ** a1 ), (y + x ** a1 * np.exp(-a2 *x))) ) + l
 	
 	return HLM
 
@@ -70,7 +71,6 @@ def grad (x,y,a):
 def grad2 (x,y,a1,a2):
 	df_da1 = -1 * sum(y -( x**a1*np.exp(-a2*x))	* a1*x**(a1-1)*np.exp(-a2*x) )
 	df_da2 = -1 * sum(y -( x**a1*np.exp(-a2*x))	* -a2*x**(a1)*np.exp(-a2*x) )
-
 	norm_grad = sqrt(df_da1 **2  + df_da2 **2  )
 
 	return df_da1 , df_da2 , norm_grad
@@ -97,26 +97,26 @@ def iter_LM(Last_L, x,y, Last_A , last_F):
 
 def iter_LM2(Last_L, x,y, Last_A1 , Last_A2 , last_F):
 	L = Last_L*10
-	v_grad = np.zeros(2,1)
+	v_grad = np.zeros((2,1))
 	v_grad[0][0] =  -1*grad2(x,y, Last_A1, Last_A2) [0]
 	v_grad[1][0] =  -1*grad2(x,y, Last_A1 , Last_A2) [1]
 	dLM = np.dot( np.linalg.inv( derivative_2_f2(x,y,Last_A1 , Last_A2 , L) ) , v_grad )
 
-	next_f = cost_fucntion2(x,y, Last_A1 + dLM , Last_A2  + dLM)
+	next_f = cost_fucntion2(x,y, Last_A1 + dLM[0] , Last_A2  + dLM[1])
 	
 	if next_f >  last_F :
 		Last_L = L
 		last_F = next_f
-		return iter_LM(Last_L  , x,y, Last_A , last_F)
+		return iter_LM2(Last_L  , x,y, Last_A1 , Last_A2 , last_F)
 	else :
 		# a_k+1
 		LL =   Last_L/10 
-		v_grad = np.zeros(2,1)
+		v_grad = np.zeros((2,1))
 		v_grad[0][0] =  -1*grad2(x,y, Last_A1, Last_A2) [0]
 		v_grad[1][0] =  -1*grad2(x,y, Last_A1 , Last_A2) [1]
-		dLM = -1 * (grad(x,y,Last_A )/ (derivative_2(x ,Last_A)+ LL ))
-		AA1 =  Last_A1 + dLM
-		AA2 =  Last_A2 + dLM  
+		dLM = np.dot( np.linalg.inv( derivative_2_f2(x,y,Last_A1 , Last_A2 , LL) ) , v_grad )
+		AA1 =  Last_A1 + dLM[0]
+		AA2 =  Last_A2 + dLM[1]
 		return AA1, AA2, LL 	
 
 
@@ -168,23 +168,23 @@ def LM2 (x,y,a1, a2,l,cond, k, g):
 	A1 = [a1]
 	A2 = [a2]
 	c_stop = stop(cond,k,nb_iter,g,G[-1],  f0, f00)	
-	
+
 	while c_stop==True:
 		GG= grad2(x,y,A1[-1],A2[-1])[2] 
-		v_grad = np.zeros(2,1)
-		v_grad[0][0] =  -1*grad2(x,y,A1[-1],A2[-2]) [0]
-		v_grad[1][0] =  -1*grad2(x,y,A1[-1],A2[-2]) [1]
+		v_grad = np.zeros((2,1))
+		v_grad[0][0] =  -1*(grad2(x,y,A1[-1],A2[-1])[0])
+		v_grad[1][0] =  -1*(grad2(x,y,A1[-1],A2[-1])[1])
 		dLM = np.dot( np.linalg.inv( derivative_2_f2(x,y,A1[-1], A2[-1] , L[-1]) ) , v_grad )
-
-		next_f = cost_fucntion2(x,y, A1[-1] + dLM , A2[-1] + dLM)
+		
+		next_f = cost_fucntion2(x,y, A1[-1] + dLM[0] , A2[-1] + dLM[1])
 
 		if next_f <  F[-1] :
-			AA1 =  A1[-1] + dLM # a_k+1
-			AA2 = A2[-1] +dLM
+			AA1 =  A1[-1] + dLM[0] # a_k+1
+			AA2 = A2[-1] +dLM[1]
 			LL = L[-1]/10
 		else :
 
-			sol =iter_LM(L[-1], x,y,A[-1], next_f)
+			sol =iter_LM2(L[-1], x,y,A1[-1],A2[-1], next_f)
 			AA1 = sol[0]
 			AA2 = sol[1]
 			LL =  sol[2]
@@ -487,18 +487,32 @@ if Which_question==13 :
 
 if Which_question==14 :
 
+	# def derivative_2_f2(x,y,a1,a2, l):	
+	print ('''Test of  derivative_2_f2  with:  \n
+		       -  x in (0,5) \n
+		       -  y generated with b = 0.01 \n
+		       -  a1  = 2 \n
+		       -  a2  = 3 \n
+		       -  l = 0.001  \n ''')
 
 
+	x= np.arange(0.01,5+0.01,0.01)
+	y=random_data_set2(x, 2, 3, 0.01 )
+	a1 = 2
+	a2 = 3
+	l = 0.001
+	print (derivative_2_f2(x,y,a1,a2, l))
+
+if Which_question==15 :
+	x= np.arange(0.01,5+0.01,0.01)
+	y=random_data_set2(x, 2, 3, 0.01 )
+	a1 = 1.5
+	a2 = 1.5
+	l = 0.001
+	sol = LM2(x,y,a1,a2 ,l, 0 , 10 ,0.1)
+	print('a1 =2',  sol[3][-1])
+	print('a2 =3',  sol[4][-1])
 
 
-
-
-
-
-
-
-
-
-
-
+# LM2 (x,y,a1, a2,l,cond, k, g)	return L, G, F, A1 , A2 	
 
