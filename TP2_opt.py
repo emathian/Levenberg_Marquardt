@@ -1,7 +1,7 @@
 import matplotlib as mpl
 from matplotlib import cm
 from math import sqrt
-from math import exp, expm1
+from math import exp, expm1 , log
 from numpy import random
 import pandas as pd
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
@@ -37,6 +37,17 @@ def cost_fucntion2(x,y,a1, a2):
 def derivative_2 (x,a):	
 	g_xa = vg(x,a)
 	return sum((-1*x*g_xa)**2)
+
+
+def derivative_2_f2(x,y,a1,a2):	
+	HLM = np.zeros((2, 2))
+	HLM[0][0] = -sum (np.dot((y-a1*x**(a1 -1) * exp(-a2 *x)), (a1 * x**(a1 -1) * exp(-a2 *x))) +	np.dot(  (x**(a1 -1)*(1 + a1 * log(x)) * exp(-a2 *x)) ,  (y - x**(a1) * exp (-a2*x)) ) )
+	HLM[0][1] = sum( np.dot( (a1 * x ** (a1 -1) * exp(-a2 *x))  ,  (-a2 * x** a1 * exp (-a2*x))  ) )
+	HLM[1][0] = sum( np.dot( (a1 * x ** (a1 -1) * exp(-a2 *x))  ,  (-a2 * x** a1 * exp (-a2*x))  ) )
+	HLM[1][1] =- sum(  np.dot( (y + x**a1 * x *exp(-a2 *x)) , (-a2*x**a1 *exp(-a2 *x)) ) + np.dot(  (- x**a1 * exp (-a2 *x)  + x * exp(-a2 ) * a2 * x ** a1 )   ,   (y + x ** a1 * exp(-a2 *x))) )
+	
+	return HLM
+
 
 
 def g(x,a):
