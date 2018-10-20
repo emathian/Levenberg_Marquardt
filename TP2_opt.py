@@ -15,7 +15,7 @@ np.random.seed()
 
 def cost_fucntion(x,y,a):
 	# size of x,y vectors are equal
-	g_xa = vg(x,a)
+	g_xa = g(x,a)
 	if np.size(y) == np.size(g_xa):
 		f = 0.5 * sum((y - g_xa)**2)	
 	else :
@@ -24,7 +24,7 @@ def cost_fucntion(x,y,a):
 
 def cost_fucntion2(x,y,a1, a2):
 	# size of x,y vectors are equal
-	g_xa = vg2(x,a1, a2)
+	g_xa = g2(x,a1, a2)
 	if np.size(y) == np.size(g_xa):
 		f = 0.5 * sum((y - g_xa)**2)
 	else :
@@ -34,7 +34,7 @@ def cost_fucntion2(x,y,a1, a2):
 
 
 def derivative_2 (x,a):	
-	g_xa = vg(x,a)
+	g_xa = g(x,a)
 	return sum((-1*x*g_xa)**2)
 
 
@@ -51,14 +51,17 @@ def derivative_2_f2(x,y,a1,a2, l):
 
 
 def g(x,a):
-	return exp(-1*a*x)
+	y  = np.exp(-1*a*x)
+	return y	
+
 
 def g2(x,a1, a2):
-	return x**a1* exp(-1*a2*x)
+	y = x**a1* exp(-1*a2*x)
+	return 
 
 
 def grad (x,y,a):
-	g_xa = vg(x,a)
+	g_xa = g(x,a)
 	if np.size(y) == np.size(g_xa):
 		G = sum((y-g_xa)*(x*g_xa))
 	else :
@@ -186,25 +189,6 @@ def stop (cond, k, nb_iter, g, current_grad , fk , fkk):
 	return c_stop				
 	
 
-def vg(x,a):
-	size_x =np.size(x)
-	y=np.zeros(size_x)
-	for i in range(0,size_x):
-		current_x = x[i]
-		y[i] = np.exp(-1*a*current_x)
-	return (y)	
-
-
-def vg2(x,a1, a2):
-	size_x =np.size(x)
-	y=np.zeros(size_x)
-	for i in range(0,size_x):
-		y[i] =x[i]**a1* np.exp(-1*a2*x[i])
-	return (y)	
-	
-
-
-
 
 
 ###############################################################################################
@@ -244,7 +228,7 @@ if Which_question==4:
 	y=random_data_set(X,2,0.01)
 	fig = plt.figure() 
 	plt.scatter(X, y)
-	plt.plot(X,vg(X,2), c = 'Green')
+	plt.plot(X,g(X,2), c = 'Green')
 	plt.xlabel('x')
 	plt.ylabel('y')
 	plt.show()
@@ -273,13 +257,13 @@ if Which_question==8:
 	y=random_data_set(x,2,3)
 	#def LM (x,y,a,l,c_stop, k, g):
 	LMf1 =LM (x,y,0.5,0.001, 0, 10, 1)
-	y_fit = vg(x,LMf1[3][-1])
+	y_fit = g(x,LMf1[3][-1])
 	print(LMf1[2][0])
 	print(LMf1[2][-1])
 	print(LMf1[3][-1])
 	fig = plt.figure() 
 	plt.scatter(x, y)
-	plt.plot(x,vg(x,2), c='black')
+	plt.plot(x,g(x,2), c='black')
 	plt.plot(x, y_fit, c='red')
 	plt.xlabel('x')
 	plt.ylabel('y')
@@ -305,7 +289,7 @@ if Which_question==9:
 	print(len(LMf1[0]))
 	print(range(62))
 
-	print('LOG', log(LMf1[1]))
+
 
 	fig = plt.figure(1) 
 	plt.subplot(131)
@@ -401,10 +385,10 @@ if Which_question==11 :
 		F_end.append(S[2][-1])
 		A_end.append(S[3][-1])
 		B_end.append(i)
-		y_fit = vg(x,S[3][-1])
+		y_fit = g(x,S[3][-1])
 	# 	plt.subplot(sub+c)
 		ax.scatter(x, y, s=0.6 )
-		ax.plot(x,vg(x,2), c='black')
+		ax.plot(x,g(x,2), c='black')
 		ax.plot(x, y_fit, c='red')
 		ax.set_title(B[i])
 
@@ -434,7 +418,7 @@ if Which_question==12 :
 	y=random_data_set2(x, 2, 3, 0.01 )
 	fig = plt.figure() 
 	plt.scatter(x, y)
-	plt.plot(x,vg2(x,2,3), c = 'red')
+	plt.plot(x,g2(x,2,3), c = 'red')
 	plt.xlabel('x')
 	plt.ylabel('y')
 	plt.show()
@@ -488,8 +472,10 @@ if Which_question==15 :
 
 	fig = plt.figure() 
 	plt.scatter(x, y)
-	plt.plot(x,vg2(x,2,3), c = 'black')
-	plt.plot(x,vg2(x,sol[3][-1],sol[4][-1]), c = 'red')
+	plt.plot(x,g2(x,2,3),label = 'Theoric curve' ,c = 'black',  linewidth=3.0)
+	plt.plot(x,g2(x,sol[3][-1],sol[4][-1]), label = 'learning curve', c = 'red')
+	plt.legend()
+	mpl.rcParams['legend.fontsize'] = 10 
 	plt.xlabel('x')
 	plt.ylabel('y')
 	plt.show()
