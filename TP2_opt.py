@@ -17,8 +17,7 @@ def cost_fucntion(x,y,a):
 	# size of x,y vectors are equal
 	g_xa = vg(x,a)
 	if np.size(y) == np.size(g_xa):
-		SCE = 0.5*(y - g_xa)**2		
-		f = sum(SCE)
+		f = 0.5 * sum((y - g_xa)**2)	
 	else :
 		print('Dimension error')	
 	return f	
@@ -27,8 +26,7 @@ def cost_fucntion2(x,y,a1, a2):
 	# size of x,y vectors are equal
 	g_xa = vg2(x,a1, a2)
 	if np.size(y) == np.size(g_xa):
-		SCE = 0.5*(y - g_xa)**2		
-		f = sum(SCE)
+		f = 0.5 * sum((y - g_xa)**2)
 	else :
 		print('Dimension error')	
 	return f	
@@ -41,13 +39,13 @@ def derivative_2 (x,a):
 
 
 def derivative_2_f2(x,y,a1,a2, l):	
-	HLM = np.zeros((2, 2))
 
-	HLM[0][0] = - (np.dot((y-a1*x**(a1 -1) * np.exp(-a2 *x)), (a1 * x**(a1 -1) * np.exp(-a2 *x))) +	np.dot(  (x**(a1 -1)*(1 + a1 * np.log(x)) * np.exp(-a2 *x)) ,  (y - x**(a1) * np.exp (-a2*x)) ) ) + l
-	HLM[0][1] = ( np.dot( (a1 * x ** (a1 -1) * np.exp(-a2 *x))  ,  (-a2 * x** a1 * np.exp (-a2*x))  ) )
-	HLM[1][0] = ( np.dot( (a1 * x ** (a1 -1) * np.exp(-a2 *x))  ,  (-a2 * x** a1 * np.exp (-a2*x))  ) )
-	HLM[1][1] = - (  np.dot( (y + x**a1 * x *np.exp(-a2 *x)) , (-a2*x**a1 *np.exp(-a2 *x)) ) + np.dot(  (- x**a1 * np.exp (-a2 *x)  + x * np.exp(-a2 ) * a2 * x ** a1 ), (y + x ** a1 * np.exp(-a2 *x))) ) + l
-	
+	HLM = np.zeros((2, 2))
+	HLM[0][0] = sum ((np.log(x)*x**a1 * np.exp(-a2*x))**2) *(1+l)
+	HLM[0][1] = sum ((np.log(x)*x**a1 * np.exp(-a2*x))*(-x**(a1 +1 )*np.exp(-a2*x)) )
+	HLM[1][0] = sum((np.log(x)*x**a1 * np.exp(-a2*x))*(-x**(a1 +1 )*np.exp(-a2*x)) )
+	HLM[1][1] =sum((-x**(a1 +1 )*np.exp(-a2*x))**2) * (1+ l)
+
 	return HLM
 
 
@@ -69,56 +67,12 @@ def grad (x,y,a):
 
 
 def grad2 (x,y,a1,a2):
-	df_da1 = -1 * sum(y -( x**a1*np.exp(-a2*x))	* a1*x**(a1-1)*np.exp(-a2*x) )
-	df_da2 = -1 * sum(y -( x**a1*np.exp(-a2*x))	* -a2*x**(a1)*np.exp(-a2*x) )
+
+	df_da1 = -1 * sum((y -( x**a1*np.exp(-a2*x)))	* np.log(x)* x**a1 * np.exp(-a2 *x) )
+	df_da2 = -1 * sum((y -( x**a1*np.exp(-a2*x)))	* -x**(a1+1)*np.exp(-a2*x) )
 	norm_grad = sqrt(df_da1 **2  + df_da2 **2  )
 
 	return df_da1 , df_da2 , norm_grad
-
-
-def iter_LM(Last_L, x,y, Last_A , last_F):
-	L = Last_L*10
-	dLM = -1 * (grad(x,y,Last_A )/ (derivative_2(x ,Last_A)+ L ))
-	next_f = cost_fucntion(x,y, Last_A + dLM)
-	
-	if next_f >  last_F :
-		Last_L = L
-		last_F = next_f
-		
-
-		return iter_LM(Last_L  , x,y, Last_A , last_F)
-	else :
-		# a_k+1
-		### Revoir conditionns de sortie  
-		LL = Last_L/10 
-		dLM = -1 * (grad(x,y,Last_A )/ (derivative_2(x ,Last_A)+ LL ))
-		AA =  Last_A + dLM 
-		return AA, LL 	
-
-def iter_LM2(Last_L, x,y, Last_A1 , Last_A2 , last_F):
-	L = Last_L*10
-	v_grad = np.zeros((2,1))
-	v_grad[0][0] =  -1*grad2(x,y, Last_A1, Last_A2) [0]
-	v_grad[1][0] =  -1*grad2(x,y, Last_A1 , Last_A2) [1]
-	dLM = np.dot( np.linalg.inv( derivative_2_f2(x,y,Last_A1 , Last_A2 , L) ) , v_grad )
-
-	next_f = cost_fucntion2(x,y, Last_A1 + dLM[0] , Last_A2  + dLM[1])
-	
-	if next_f >  last_F :
-		Last_L = L
-		last_F = next_f
-		return iter_LM2(Last_L  , x,y, Last_A1 , Last_A2 , last_F)
-	else :
-		# a_k+1
-		LL =   Last_L/10 
-		v_grad = np.zeros((2,1))
-		v_grad[0][0] =  -1*grad2(x,y, Last_A1, Last_A2) [0]
-		v_grad[1][0] =  -1*grad2(x,y, Last_A1 , Last_A2) [1]
-		dLM = np.dot( np.linalg.inv( derivative_2_f2(x,y,Last_A1 , Last_A2 , LL) ) , v_grad )
-		AA1 =  Last_A1 + dLM[0]
-		AA2 =  Last_A2 + dLM[1]
-		return AA1, AA2, LL 	
-
 
 
 def LM (x,y,a,l,cond, k, g):
@@ -138,17 +92,11 @@ def LM (x,y,a,l,cond, k, g):
 		if next_f <  F[-1] :
 			AA =  A[-1] + dLM # a_k+1
 			LL = L[-1]/10
+			print('L/10')
 		else :
-			sol =iter_LM(L[-1], x,y,A[-1], next_f)
-			AA = sol[0]
-			LL =  sol[1]
-			# LL = L[-1]*10
-			# while next_f <  F[-1]:
-			# 	dLM = -1 * (grad(x,y,Last_A )/ (derivative_2(x ,Last_A)+ LL ))
-			# 	next_f = cost_fucntion(x,y, Last_A + dLM)
-			# 	LL = LL*10
-			# AA = A[-1] +dLM
-			# LL = LL /10
+			AA  = A[-1]
+			LL = L[-1]*10
+			
 		L.append(LL)
 		G.append(GG)
 		F.append(next_f)
@@ -171,30 +119,22 @@ def LM2 (x,y,a1, a2,l,cond, k, g):
 
 	while c_stop==True:
 		GG= grad2(x,y,A1[-1],A2[-1])[2] 
+
 		v_grad = np.zeros((2,1))
 		v_grad[0][0] =  -1*(grad2(x,y,A1[-1],A2[-1])[0])
 		v_grad[1][0] =  -1*(grad2(x,y,A1[-1],A2[-1])[1])
 		dLM = np.dot( np.linalg.inv( derivative_2_f2(x,y,A1[-1], A2[-1] , L[-1]) ) , v_grad )
 		
 		next_f = cost_fucntion2(x,y, A1[-1] + dLM[0] , A2[-1] + dLM[1])
-
-		if next_f <  F[-1] :
+		if next_f < F[-1] :  ######## A REFLECHIR
 			AA1 =  A1[-1] + dLM[0] # a_k+1
 			AA2 = A2[-1] +dLM[1]
 			LL = L[-1]/10
 		else :
-
-			sol =iter_LM2(L[-1], x,y,A1[-1],A2[-1], next_f)
-			AA1 = sol[0]
-			AA2 = sol[1]
-			LL =  sol[2]
-			# LL = L[-1]*10
-			# while next_f <  F[-1]:
-			# 	dLM = -1 * (grad(x,y,Last_A )/ (derivative_2(x ,Last_A)+ LL ))
-			# 	next_f = cost_fucntion(x,y, Last_A + dLM)
-			# 	LL = LL*10
-			# AA = A[-1] +dLM
-			# LL = LL /10
+			AA1  = A1[-1]
+			AA2  = A2[-1]
+			LL = L[-1]*10
+			
 		L.append(LL)
 		G.append(GG)
 		F.append(next_f)
@@ -235,9 +175,9 @@ def stop (cond, k, nb_iter, g, current_grad , fk , fkk):
 	if cond ==0 :
 		c_stop = nb_iter < k
 	elif cond ==1  :
-		c_stop = current_grad < g
+		c_stop = current_grad > g
 	elif cond==2 :
-		c_stop =  nb_iter < k and current_grad < g
+		c_stop =  nb_iter < k and current_grad > g
 	elif cond==3 :
 		c_stop = fkk < fk
 			
@@ -251,7 +191,7 @@ def vg(x,a):
 	y=np.zeros(size_x)
 	for i in range(0,size_x):
 		current_x = x[i]
-		y[i] = exp(-1*a*current_x)
+		y[i] = np.exp(-1*a*current_x)
 	return (y)	
 
 
@@ -259,7 +199,7 @@ def vg2(x,a1, a2):
 	size_x =np.size(x)
 	y=np.zeros(size_x)
 	for i in range(0,size_x):
-		y[i] =x[i]**a1* exp(-1*a2*x[i])
+		y[i] =x[i]**a1* np.exp(-1*a2*x[i])
 	return (y)	
 	
 
@@ -349,10 +289,10 @@ if Which_question==8:
 
 if Which_question==9:
 	x= np.arange(0,3+0.01,0.01)
-	y=random_data_set(x,2,0.01)
+	y=random_data_set(x,2,0.1)
 	print(y[0:10])
 	#def LM (x,y,a,l,c_stop, k, g):
-	LMf1 =LM (x,y,1.5,0.001, 2, 10, 0.001)
+	LMf1 =LM (x,y,1.5,0.001, 0 , 60, 0.1)
 	dic = {
     'lambda': LMf1[0],
     'norm gradient':LMf1[1],
@@ -361,7 +301,33 @@ if Which_question==9:
 	}
 	df = pd.DataFrame(dic)
 	print(df)
+	print(LMf1[0])
+	print(len(LMf1[0]))
+	print(range(62))
 
+	print('LOG', log(LMf1[1]))
+
+	fig = plt.figure(1) 
+	plt.subplot(131)
+	plt.plot(range(61), LMf1[0])
+	#plt.ylim(-0.5,2)
+	plt.xlabel('k')
+	plt.ylabel('lambda')
+
+	plt.subplot(132)
+	plt.plot(range(61), log(LMf1[1]))
+	#plt.ylim(0,0.002)
+	plt.xlabel('k')
+	plt.ylabel('|g|')
+
+
+	plt.subplot(133)
+	plt.plot(range(61), log(LMf1[2]))
+	#plt.ylim(0,0.002)
+	plt.xlabel('k')
+	plt.ylabel('f')
+
+	plt.show()
 
 if Which_question==10 :
 	x= np.arange(0,3+0.01,0.1)
@@ -496,23 +462,41 @@ if Which_question==14 :
 		       -  l = 0.001  \n ''')
 
 
-	x= np.arange(0.01,5+0.01,0.01)
-	y=random_data_set2(x, 2, 3, 0.01 )
+	x= np.arange(0,5+0.01,0.01)
+	y= random_data_set2(x, 2, 3, 0.01 )
+	
 	a1 = 2
 	a2 = 3
 	l = 0.001
 	print (derivative_2_f2(x,y,a1,a2, l))
 
 if Which_question==15 :
-	x= np.arange(0.01,5+0.01,0.01)
+	x= np.arange(0.5,5+0.01,0.01)
 	y=random_data_set2(x, 2, 3, 0.01 )
 	a1 = 1.5
 	a2 = 1.5
-	l = 0.001
-	sol = LM2(x,y,a1,a2 ,l, 0 , 10 ,0.1)
-	print('a1 =2',  sol[3][-1])
-	print('a2 =3',  sol[4][-1])
+	l = 0.00001
+	
+	sol = LM2(x,y,a1,a2 ,l, 1 , 30 ,0.001)
+	s = pd.DataFrame()
+	s["Lambda"] = sol[0]
+	s["Norm Grad "] = sol[1]
+	s["Cost function F"] = sol[2]
+	s["a1 "] = sol[3]
+	s["a2 "] = sol[4]
+	print(s)
 
+	fig = plt.figure() 
+	plt.scatter(x, y)
+	plt.plot(x,vg2(x,2,3), c = 'black')
+	plt.plot(x,vg2(x,sol[3][-1],sol[4][-1]), c = 'red')
+	plt.xlabel('x')
+	plt.ylabel('y')
+	plt.show()
+
+
+if Which_question==16 :
+	pass
 
 # LM2 (x,y,a1, a2,l,cond, k, g)	return L, G, F, A1 , A2 	
 
