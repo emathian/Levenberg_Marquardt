@@ -212,7 +212,8 @@ if Which_question==1:
 
 if Which_question==2:	
 	print('function g  returns the result of g(x)= e^(-ax) with x=0 and a=1		:',g(0,1))
-
+	X= np.arange(0,3+0.01,0.01)
+	print(g(0,x))
 if Which_question==3:	
 	print('''The function random_data_set allow to generate a randomized data set such that y = g(a,x)+bN(0,1).
 		  Users have to enter as parameters : \n
