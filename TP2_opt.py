@@ -55,7 +55,7 @@ def g(x,a):
 
 
 def g2(x,a1, a2):
-	y = x**a1* exp(-1*a2*x)
+	y = x**a1* np.exp(-1*a2*x)
 	return y
 
 
@@ -364,6 +364,24 @@ if Which_question==10 :
 
 
 
+	plt.figure(7)
+	plt.subplot(221)
+	plt.plot(B_end, L_end, 'o-')
+	plt.ylabel('lambda')
+
+	plt.subplot(222)	
+	plt.plot(B_end, G_end, 'o-')
+	plt.ylabel('Norm gradient')
+
+	plt.subplot(223)	
+	plt.plot(B_end, F_end, 'o-')
+	plt.ylabel('f(a_k)')
+
+	plt.subplot(224)	
+	plt.plot(B_end, A_end, 'o-')
+	plt.ylabel('a')
+	plt.xlabel('b')
+
 
 
 
@@ -410,46 +428,16 @@ if Which_question==10 :
 	
 	fig = plt.figure(5) 
 
-	plt.plot(range(31), F_end[0],label='b=0.01' ,c=(0, 0.2, 0.6) )
-	plt.plot(range(31), F_end[1], label='b=0.1' ,c=(0, 0.4, 0.6) )
-	plt.plot(range(31), F_end[2], label='b=0.5' ,c=(0, 0.6, 0.6) )
-	plt.plot(range(31), F_end[3], label='b=1' ,c=(0, 0.8, 0.6) )
+	plt.plot(range(5), F_end[0][0:5],label='b=0.01' ,c=(0, 0.2, 0.6) )
+	plt.plot(range(5), F_end[1][0:5], label='b=0.1' ,c=(0, 0.4, 0.6) )
+	plt.plot(range(5), F_end[2][0:5], label='b=0.5' ,c=(0, 0.6, 0.6) )
+	plt.plot(range(5), F_end[3][0:5], label='b=1' ,c=(0, 0.8, 0.6) )
 	plt.legend() #adds a legend
 	mpl.rcParams['legend.fontsize'] = 10 #sets the legend font size
 	plt.show()
 	print(F_end)
-	print(A_end)
 
-
-
-	print(LMf1[0])
-	print(len(LMf1[0]))
-	print(range(62))
-
-
-
-	fig = plt.figure(1) 
-	plt.subplot(131)
-	plt.plot(range(61), LMf1[0])
-	#plt.ylim(-0.5,2)
-	plt.xlabel('k')
-	plt.ylabel('lambda')
-
-	plt.subplot(132)
-	plt.plot(range(61), log(LMf1[1]))
-	#plt.ylim(0,0.002)
-	plt.xlabel('k')
-	plt.ylabel('|g|')
-
-
-	plt.subplot(133)
-	plt.plot(range(61), log(LMf1[2]))
-	#plt.ylim(0,0.002)
-	plt.xlabel('k')
-	plt.ylabel('f')
-
-	plt.show()
-
+	
 
 if Which_question==11 :
 	x= np.arange(0,3+0.01,0.01)
@@ -457,17 +445,30 @@ if Which_question==11 :
 	# B1 = list(np.arange(0, 1.2, 0.2))
 	# B2 = list(np.arange(0, 6, 1))
 	# B = B1 + B2[2:]
-	B = list(np.arange(0, 10, 0.5))
+	B = list(np.arange(0, 5, 0.5))
 	L_end  =[]
 	G_end = []
 	F_end = []
 	A_end =[]
 	B_end = []
+
+	L1=[]
+	G1=[]
+	F1 =[]
+	A1 =[]
+
+
+	L2=[]
+	G2=[]
+	F2 =[]
+	A2 =[]
+
 	fig, axes = plt.subplots(nrows=len(B)/2, ncols=2,  sharex=True, sharey=True)
 	for i, ax in enumerate(axes.flatten()):
 
+
 		y=random_data_set(x,2,B[i])
-		S =LM (x,y,1.5,0.001, 0, 10000, 0.01)
+		S =LM (x,y,1.5,0.001, 0, 10000, 0.01)# 100000
 		L_end.append (S[0][-1])
 		G_end.append (S[1][-1])
 		F_end.append(S[2][-1])
@@ -480,10 +481,12 @@ if Which_question==11 :
 		ax.plot(x, y_fit, c='red')
 		ax.set_title(B[i])
 
+
 	plt.ylim(-0.2,2)
 	plt.xlim(0,3)
-	
 	plt.show()
+
+
 	print(len(L_end))
 	dic = {
 	'B' : B_end,
@@ -494,6 +497,8 @@ if Which_question==11 :
 	}
 	df = pd.DataFrame(dic)
 	print(df)
+
+	
 
 if Which_question==12 :
 	print (' function g  returns the result of g(x)= x**a1 e**(-a2 x) with x=1, a1=1  and a2=1 		:', g2(1, 1, 1))
@@ -506,7 +511,7 @@ if Which_question==12 :
 	y=random_data_set2(x, 2, 3, 0.01 )
 	fig = plt.figure() 
 	plt.scatter(x, y)
-	plt.plot(x,g2(x,2,3), c = 'red')
+	plt.plot(x,g2(x,2,3), c = 'black')
 	plt.xlabel('x')
 	plt.ylabel('y')
 	plt.show()
@@ -570,7 +575,73 @@ if Which_question==15 :
 
 
 if Which_question==16 :
-	pass
+	x= np.arange(0.01,5+0.01,0.05)
+	print(len(x))
+	Nb_iter = 100
+	B = [0.01]
+	L_end  =[]
+	G_end = []
+	F_end = []
+	A1_end =[]
+	A2_end =[]
+	B_end = []
+	c =0
+	C = 0.3
+	for i in B :
+		col = (0, C, 0.6) 
+		C += 0.2
+		y=random_data_set2(x,2,3,i)
+		S =LM2 (x,y,1.5,1.5,0.001, 0 , Nb_iter, 0.01)
+		L_end.append (S[0])
+		G_end.append (S[1])
+		F_end.append(S[2])
+		A1_end.append(S[3])
+		A2_end.append(S[4])
 
-# LM2 (x,y,a1, a2,l,cond, k, g)	return L, G, F, A1 , A2 	
+		fig = plt.figure(c) 
+		
+		fig.suptitle(i, fontsize=16)
+ 
+		plt.subplot(121)
+		plt.plot(range(Nb_iter+1), S[0], c=col)
+		plt.xlabel('k')
+		plt.ylabel('lambda')
 
+		plt.subplot(122)
+		plt.plot(range(Nb_iter+1), S[1], c=col)
+		plt.yscale('log')
+		plt.xlabel('k')
+		plt.ylabel('log(|g|)')
+
+		c+= 1
+	
+	print('approxiamaton de a1 :		', S[3][-1] )
+	print('approxiamaton de a2 :		', S[4][-1] )
+	
+	fig = plt.figure(1) 
+
+	plt.plot(range(Nb_iter+1), F_end[0],label='b=0.01' ,c=(0, 0.5, 0.6) )
+	
+	plt.ylabel( 'f')
+	plt.xlabel('k')
+	plt.legend() #adds a legend
+	mpl.rcParams['legend.fontsize'] = 10 #sets the legend font size
+	
+
+
+	y_fit = g2(x,S[3][-1], S[4][-1])
+	
+	fig = plt.figure(2) 
+	plt.scatter(x, y)
+	plt.plot(x,g2(x,2,3), c='black')
+	plt.plot(x, y_fit, c='red')
+	plt.xlabel('x')
+	plt.ylabel('y')
+
+	plt.show()
+
+
+if Which_question==17 :
+	pass	
+	
+		
