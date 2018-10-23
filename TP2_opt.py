@@ -11,102 +11,194 @@ import matplotlib.colors
 import numpy as np
 
 
-np.random.seed()
 
-def cost_fucntion(x,y,a):
-	# size of x,y vectors are equal
+'''
+						Levenberberg Marquardt (LM) algorithm :
+Levenberberg Marquardt algorithm is used to solve mimisation sum of squares errors problem.
+We are going to use these properties to optimize predictions of non linear model. We could 
+underline that Levenberberg Marquardt method gathers gradient descent algotrithlm and Newton 
+algotrithlm, previously implemented .
+We will test the algorithm on two functions, like this the program following is not a generalization.	
+In a first example we are going to fit data to an exponantial model such that g(x) =  e ^{-ax}		
+In a second example we are going to fit data to an bi-exponantial model such that g(x) =  x^a1 e ^{-ax}				
+'''
+
+np.random.seed()  # Use to fix the seed if necessary
+
+###############################################################################################
+#								FONCTIONS											     	  #	
+# Functions are sorted in alphabetic order.													  #	
+###############################################################################################
+
+ 
+def cost_fucntion(x,y,a): # 1
+	'''Remember: In optimization  the cost function is the function to minimize. In a LM problem
+	this function is the sum of squared error between a data set and a model.
+	Like this cost_fucntion takes as parameter y wich is the data set, x the interval on wich the
+	model function is calculated and 'a' the  current approximation of the unique parameter.
+	cost_function returns the SSE. 
+	Here the model is an exponenetial such that  g(x) = e ^{-ax} '''
+
 	g_xa = g(x,a)
 	if np.size(y) == np.size(g_xa):
-		f = 0.5 * sum((y - g_xa)**2)	
+		f = 0.5 * sum((y - g_xa)**2) #SSE
 	else :
 		print('Dimension error')	
 	return f	
 
-def cost_fucntion2(x,y,a1, a2):
-	# size of x,y vectors are equal
+def cost_fucntion2(x,y,a1, a2): #2
+	''' cost_fucntion2 has the same aim than the previous function, aside from the number of parameters
+	which are a1 and a2 and the model which is a bi-exponential one such that g(x) = x^a1 e^{-a2x}  '''
+
 	g_xa = g2(x,a1, a2)
 	if np.size(y) == np.size(g_xa):
-		f = 0.5 * sum((y - g_xa)**2)
+		f = 0.5 * sum((y - g_xa)**2) #SSE
 	else :
 		print('Dimension error')	
 	return f	
 
 
 
-def derivative_2 (x,a,l):	
-		return sum((-x*np.exp(-1*a*x))**2) *(1+l)
+def derivative_2 (x,a,l):	 #1
+	''' derivative_2 returns the second derivate the cost function wich is approximated with 
+	newton  methid; here we get d^2f/da^2 =sum(dg/da^2)*(1+l).
+	According to this formula derivative_2 takes 3 parameters x the interval on which the model 
+	is calculated,  the current approximation of a, and l (writed lambda) wich express the relative
+	importance of the second dericvative over the first derivative.'''
+
+	return sum((-x*np.exp(-1*a*x))**2) *(1+l) #d^2f/da^2 =sum(dg/da^2)*(1+l).
 
 
-def derivative_2_f2(x,y,a1,a2, l):	
+def derivative_2_f2(x,y,a1,a2, l):	#2
+	''' derivative_2_f2  has the same aim than derivative_2 , but is adapted to the bi-exponential
+	instance. Because this model has two parameters the Hessian matrix is a 2*2 matrix, and its 
+	approximation by Newton method gives also a 2*2 matrix named HLM such that HLM = H *lI. '''
 
+	for i in range(len(x)):
+		if x[i]==0:
+			x[i]+= 10**(-5)
 	HLM = np.zeros((2, 2))
-	HLM[0][0] = sum ((np.log(x)*x**a1 * np.exp(-a2*x))**2) *(1+l)
-	HLM[0][1] = sum ((np.log(x)*x**a1 * np.exp(-a2*x))*(-x**(a1 +1 )*np.exp(-a2*x)) )
-	HLM[1][0] = sum((np.log(x)*x**a1 * np.exp(-a2*x))*(-x**(a1 +1 )*np.exp(-a2*x)) )
-	HLM[1][1] =sum((-x**(a1 +1 )*np.exp(-a2*x))**2) * (1+ l)
+	HLM[0][0] = sum ((np.log(x)*x**a1 * np.exp(-a2*x))**2) *(1+l) # sum( (dg/da_1)**2  )* (1 + l)
+	HLM[0][1] = sum ((np.log(x)*x**a1 * np.exp(-a2*x))*(-x**(a1 +1 )*np.exp(-a2*x)) ) # sum( d2g/da_1 *  d2g/da_2 )
+	HLM[1][0] = sum((np.log(x)*x**a1 * np.exp(-a2*x))*(-x**(a1 +1 )*np.exp(-a2*x)) ) # sum( d2g/da_1 *  d2g/da_2 )
+	HLM[1][1] =sum((-x**(a1 +1 )*np.exp(-a2*x))**2) * (1+ l)  # sum( (dg/da_2)**2 )* (1 + l)
 
 	return HLM
 
 
 
-def g(x,a):
+def g(x,a): #1
+	''' g is the first model will fit data fromm random_data_set function. This model has only
+	one parameter.'''
+
 	y  = np.exp(-1*a*x)
 	return y	
 
 
-def g2(x,a1, a2):
+def g2(x,a1, a2): #2
+	''' g2 is the second model will fit data fromm random_data_set2 function. This model has two 
+	parameters a1 and a2.'''
+
 	y = x**a1* np.exp(-1*a2*x)
 	return y
 
 
-def grad (x,y,a):
+def grad (x,y,a): #1
+	''' grad calculates the gradient of the cost function (#1). Here the gradient is equal to the
+	first derivative, and the gradient norm to the absolute value of the gradient. '''
+
 	G = sum((y- np.exp(-1*a*x))*(x*np.exp(-1*a*x)))
 	return G
 
 
 def grad2 (x,y,a1,a2):
-
-	df_da1 = -1 * sum((y -( x**a1*np.exp(-a2*x)))	* np.log(x)* x**a1 * np.exp(-a2 *x) )
-	df_da2 = -1 * sum((y -( x**a1*np.exp(-a2*x)))	* -x**(a1+1)*np.exp(-a2*x) )
-	norm_grad = sqrt(df_da1 **2  + df_da2 **2  )
+	''' grad2 calculates the gradient of the cost function (#2). Here the gradient is a vector of
+	size two such that the first term is df/da1 and the second one is df/da2. The gradient norm is calculeted 
+	according to the Euclidian norm definiton . '''
+	for i in range(len(x)):
+		if x[i]==0:
+			x[i]+= 10**(-5) # To avoid log(0)
+	df_da1 = -1 * sum((y -( x**a1*np.exp(-a2*x)))	* np.log(x)* x**a1 * np.exp(-a2 *x) ) # df/da_1 =  -sum ((y - g2(x,a) * dg/da_1)
+	df_da2 = -1 * sum((y -( x**a1*np.exp(-a2*x)))	* -x**(a1+1)*np.exp(-a2*x) )  # df/da_2 =  -sum ((y - g2(x,a) * dg/da_2)
+	norm_grad = sqrt(df_da1 **2  + df_da2 **2  )  # Euclidian norm
 
 	return df_da1 , df_da2 , norm_grad
 
 
 def LM (x,y,a,l,cond, k, g):
+	''' Levenberg Marquardt method for the first model (#1) follows an iterative process.
+	-Firstly we initialize returned lists, ans stop criteria.
+	-Then whil the stop criteria is not break:
+		- we compute the direction value according to the first and the second derivative
+		- We update the cost function and according to its value commpared to the previous one :
+			- if new cost function value is inferior to the previous one then
+				- we add the direction to a 
+				- we divide lambda (we give more importance to Newton method)
+			- otherwise
+				- we conserve the current a value
+				- lambda is multiplicated by 10 (we give more importance to Gradient Descent method)
+
+	LM function takes in entry : 
+	- x a vector on wich the model is calculated,
+	- y a data set, 
+	- l an initialisation for lambda value,
+	- cond a stop criteria, 
+	- k the maximum of iterations
+	- g the minimum of gradient norm
+
+	LM returns :
+	- L a list of successives lambda values
+	- G a list of successives norm gradient values
+	- F a list of successives cost function values
+	- A a list of successives approximations of a 
+	'''
+
+	# INITIALIZATION :
+
 	f0 = cost_fucntion(x,y,a)
-	f00 = cost_fucntion(x,y,a) -1 # atificial initiation for cond 3
+	f00 = cost_fucntion(x,y,a) -1 # atificial initiation for the third stop criteria
 	nb_iter =0
 	L =[l]
 	G =[abs(grad(x,y,a))]
 	F= [f0]
 	A = [a]
 	c_stop = stop(cond,k,nb_iter,g,G[-1],  f0, f00)	
-	# def stop (cond, k, nb_iter, g, current_grad , fk , fkk):
+	
+	# MAIN LOOP
 	while c_stop==True:
-		GG= abs(grad(x,y,A[-1] ) )
-		dLM = -1 * (grad(x,y,A[-1] )/ (derivative_2(x ,A[-1], L[-1] )) )
-		next_f = cost_fucntion(x,y, A[-1] + dLM)
+		GG= abs(grad(x,y,A[-1] ) ) # Update norm gradient 
+		dLM = -1 * (grad(x,y,A[-1] )/ (derivative_2(x ,A[-1], L[-1] )) ) 
+		next_f = cost_fucntion(x,y, A[-1] + dLM) 
 		if next_f <  F[-1] :
-			AA =  A[-1] + dLM # a_k+1
-			LL = L[-1]/10
+			AA =  A[-1] + dLM # Update parameter's approximation
+			LL = L[-1]/10 # Update lambda toward Newton method
 			
 		else :
-			AA  = A[-1]
-			LL = L[-1]*10
-			
+			AA  = A[-1] # Keep the same parameter's approximation 
+			LL = L[-1]*10 # Update lambda toward Gradient descent method
+		
+		# ADD LOOP'S RESULTS	
 		L.append(LL)
 		G.append(GG)
 		F.append(next_f)
 		A.append(AA)
+
+		# UPDATE STOP CRITERIA
 		nb_iter +=1
 		c_stop = stop(cond,k,nb_iter,g,G[-1], F[-1], next_f)	
 			
 	return L, G, F, A
 
 def LM2 (x,y,a1, a2,l,cond, k, g):
+	''' LM2 is the same algorithm than LM but adapted to the bi-exponential model.
+	Like this we call grad2 instead of grad, derivative_2_f2 instead of derivative_2, 
+	and cost_fucntion2 insteac of cost_fucntion.
+	LM2 returns the same results but with a1 and a2 lists.'''
+
+	# INITIALIZATION :
+
 	f0 = cost_fucntion2(x,y,a1,a2)
-	f00 = f0 -1 # atificial initiation for cond 3
+	f00 = f0 -1  # atificial initiation for the third stop criteria
 	nb_iter =0
 	L =[l]
 	G =[ grad2(x,y,a1,a2)[2]   ]
@@ -115,24 +207,28 @@ def LM2 (x,y,a1, a2,l,cond, k, g):
 	A2 = [a2]
 	c_stop = stop(cond,k,nb_iter,g,G[-1],  f0, f00)	
 
-	while c_stop==True:
-		GG= grad2(x,y,A1[-1],A2[-1])[2] 
+	# MAIN LOOP
 
-		v_grad = np.zeros((2,1))
+	while c_stop==True:
+		GG= grad2(x,y,A1[-1],A2[-1])[2] # Update norm gradient 
+		# Gradient calculation
+		v_grad = np.zeros((2,1)) 
 		v_grad[0][0] =  -1*(grad2(x,y,A1[-1],A2[-1])[0])
 		v_grad[1][0] =  -1*(grad2(x,y,A1[-1],A2[-1])[1])
-		dLM = np.dot( np.linalg.inv( derivative_2_f2(x,y,A1[-1], A2[-1] , L[-1]) ) , v_grad )
-		
+		dLM = np.dot( np.linalg.inv( derivative_2_f2(x,y,A1[-1], A2[-1] , L[-1]) ) , v_grad )	
 		next_f = cost_fucntion2(x,y, A1[-1] + dLM[0] , A2[-1] + dLM[1])
-		if next_f < F[-1] :  ######## A REFLECHIR
-			AA1 =  A1[-1] + dLM[0] # a_k+1
+		if next_f < F[-1] : 
+			# Update parameters' approximations
+			AA1 =  A1[-1] + dLM[0] 
 			AA2 = A2[-1] +dLM[1]
-			LL = L[-1]/10
+			LL = L[-1]/10  # Update lambda toward Newton method
 		else :
 			AA1  = A1[-1]
 			AA2  = A2[-1]
-			LL = L[-1]*10
-			
+			LL = L[-1]*10 # Update lambda toward Gradient descent method
+	
+	# ADD LOOP'S RESULTS	
+
 		L.append(LL)
 		G.append(GG)
 		F.append(next_f)
@@ -144,7 +240,11 @@ def LM2 (x,y,a1, a2,l,cond, k, g):
 	return L, G, F, A1 , A2 	
 
 
-def random_data_set(x,a,b) : # B est l'amplitude du bruit
+def random_data_set(x,a,b) : 
+	'''random_data_set function allows to generate a data set following a exponential model 
+	such that g(x)=e^{—ax}, that's this function takes as parameter an interval x, and parameter
+	a, furthemore we generate noise according a normal law (N(0,1)) weight by b.
+	random_data_set returns a data set contained in a vector y of size equal to x size vector.'''
 
 	y=np.zeros(np.size(x))
 	for i in range(0,np.size(x)):
@@ -152,7 +252,9 @@ def random_data_set(x,a,b) : # B est l'amplitude du bruit
 		y[i] = g(current_x, a) + b*np.random.normal(0,1, 1)	
 	return (y)	
 
-def random_data_set2(x,a1,a2,b) : # B est l'amplitude du bruit
+def random_data_set2(x,a1,a2,b) :
+	'''random_data_set2 has the same aim than random_data_set but allows to generate a data set following
+	a bi-exponential model such that  g(x)=x^a_1 e^{—a_2x}.'''
 
 	y=np.zeros(np.size(x))
 	for i in range(0,np.size(x)):
@@ -251,7 +353,6 @@ if Which_question==7:
 if Which_question==8:
 	x= np.arange(0,3+0.01,0.01)
 	y=random_data_set(x,2,3)
-	#def LM (x,y,a,l,c_stop, k, g):
 	LMf1 =LM (x,y,0.5,0.001, 0, 10, 1)
 	y_fit = g(x,LMf1[3][-1])
 	print(LMf1[2][0])
@@ -269,8 +370,6 @@ if Which_question==8:
 
 if Which_question==9:
 	x= np.arange(0,3+0.01,0.01)
-
-
 	B = [0.01]
 	L_end  =[]
 	G_end = []
@@ -285,6 +384,7 @@ if Which_question==9:
 
 		y=random_data_set(x,2,i)
 		S =LM (x,y,1.5,0.001, 0 , 50, 0.001)
+		S[0] = S[0]
 		L_end.append (S[0])
 		G_end.append (S[1])
 		F_end.append(S[2])
@@ -334,10 +434,6 @@ if Which_question==9:
 
 if Which_question==10 :
 	x= np.arange(0,3+0.01,0.1)
-	
-	# B1 = list(np.arange(0, 1.2, 0.2))
-	# B2 = list(np.arange(0, 6, 1))
-	# B = B1 + B2[2:]
 	B = list(np.arange(0, 0.3, 0.01))
 	L_end  =[]
 	G_end = []
@@ -347,7 +443,8 @@ if Which_question==10 :
 	for i in B :
 		y=random_data_set(x,2,i)
 		S =LM (x,y,1.5,0.001, 2, 30, 0.001)
-		L_end.append (S[0][-1])
+		SL= S[0][-1]*10**5
+		L_end.append (SL)
 		G_end.append (S[1][-1])
 		F_end.append(S[2][-1])
 		A_end.append(S[3][-1])
@@ -363,29 +460,30 @@ if Which_question==10 :
 	print(df)
 
 
-
 	plt.figure(7)
 	plt.subplot(221)
-	plt.plot(B_end, L_end, 'o-')
-	plt.ylabel('lambda')
+	plt.plot(B_end, L_end,'o-' , c=(0, 0.2, 0.6) )
+
+	plt.ylabel('lambda * e+5')
 
 	plt.subplot(222)	
-	plt.plot(B_end, G_end, 'o-')
+	plt.plot(B_end, G_end,'o-' ,c=(0, 0.4, 0.6))
+	plt.yscale('log')
 	plt.ylabel('Norm gradient')
 
 	plt.subplot(223)	
-	plt.plot(B_end, F_end, 'o-')
+	plt.plot(B_end, F_end, 'o-',c=(0, 0.6, 0.6))
 	plt.ylabel('f(a_k)')
 
 	plt.subplot(224)	
-	plt.plot(B_end, A_end, 'o-')
+	plt.plot(B_end, A_end,'o-', c=(0, 0.8, 0.6))
 	plt.ylabel('a')
 	plt.xlabel('b')
 
 
 
-
-	B = [0.01, 0.1 , 0.5,1]
+	Nb_iter = 30
+	B = [0.01, 0.1 , 1,5,10]
 	L_end  =[]
 	G_end = []
 	F_end = []
@@ -398,53 +496,44 @@ if Which_question==10 :
 		C += 0.2
 
 		y=random_data_set(x,2,i)
-		S =LM (x,y,1.5,0.001, 0 , 30, 0.001)
+		S =LM (x,y,1.5,0.001, 0 , Nb_iter, 0.001)
 		L_end.append (S[0])
 		G_end.append (S[1])
 		F_end.append(S[2])
 		A_end.append(S[3])
 
-		fig = plt.figure(c) 
-		
+		fig = plt.figure(c) 	
 		fig.suptitle(i, fontsize=16)
  
 		plt.subplot(121)
-		plt.plot(range(31), S[0], c=col)
-		
+		plt.plot(range(Nb_iter+1), S[0], c=col)		
 		plt.xlabel('k')
 		plt.ylabel('lambda')
 
 		plt.subplot(122)
-		plt.plot(range(31), S[1], c=col)
+		plt.plot(range(Nb_iter+1), S[1], c=col)
 		plt.yscale('log')
 		plt.xlabel('k')
 		plt.ylabel('|g|')
-	
+		print('B = ', i, S[3][-1])
 
-		
-		
 		c+= 1
 	
 	
 	fig = plt.figure(5) 
 
-	plt.plot(range(5), F_end[0][0:5],label='b=0.01' ,c=(0, 0.2, 0.6) )
-	plt.plot(range(5), F_end[1][0:5], label='b=0.1' ,c=(0, 0.4, 0.6) )
-	plt.plot(range(5), F_end[2][0:5], label='b=0.5' ,c=(0, 0.6, 0.6) )
-	plt.plot(range(5), F_end[3][0:5], label='b=1' ,c=(0, 0.8, 0.6) )
+	plt.plot(range(6), F_end[0][0:6],label='b=0.01' ,c=(0, 0.2, 0.6) )
+	plt.plot(range(6), F_end[1][0:6], label='b=0.1' ,c=(0, 0.4, 0.6) )
+	plt.plot(range(6), F_end[2][0:6], label='b=0.5' ,c=(0, 0.6, 0.6) )
+	plt.plot(range(6), F_end[3][0:6], label='b=1' ,c=(0, 0.8, 0.6) )
 	plt.legend() #adds a legend
 	mpl.rcParams['legend.fontsize'] = 10 #sets the legend font size
 	plt.show()
 	print(F_end)
-
 	
 
 if Which_question==11 :
 	x= np.arange(0,3+0.01,0.01)
-	
-	# B1 = list(np.arange(0, 1.2, 0.2))
-	# B2 = list(np.arange(0, 6, 1))
-	# B = B1 + B2[2:]
 	B = list(np.arange(0, 5, 0.5))
 	L_end  =[]
 	G_end = []
@@ -468,14 +557,13 @@ if Which_question==11 :
 
 
 		y=random_data_set(x,2,B[i])
-		S =LM (x,y,1.5,0.001, 0, 10000, 0.01)# 100000
+		S =LM (x,y,1.5,0.001, 0, 10000, 0.01)
 		L_end.append (S[0][-1])
 		G_end.append (S[1][-1])
 		F_end.append(S[2][-1])
 		A_end.append(S[3][-1])
 		B_end.append(B[i])
 		y_fit = g(x,S[3][-1])
-	# 	plt.subplot(sub+c)
 		ax.scatter(x, y, s=0.6 )
 		ax.plot(x,g(x,2), c='black')
 		ax.plot(x, y_fit, c='red')
@@ -529,8 +617,7 @@ if Which_question==13 :
 		   '- |g|   = ' ,grad2(x,y,a1,a2)[2] , '\n')
 
 if Which_question==14 :
-
-	# def derivative_2_f2(x,y,a1,a2, l):	
+	
 	print ('''Test of  derivative_2_f2  with:  \n
 		       -  x in (0,5) \n
 		       -  y generated with b = 0.01 \n
@@ -575,9 +662,9 @@ if Which_question==15 :
 
 
 if Which_question==16 :
-	x= np.arange(0.01,5+0.01,0.05)
+	x= np.arange(0,5+0.01,0.05)
 	print(len(x))
-	Nb_iter = 100
+	Nb_iter = 60
 	B = [0.01]
 	L_end  =[]
 	G_end = []
@@ -598,34 +685,35 @@ if Which_question==16 :
 		A1_end.append(S[3])
 		A2_end.append(S[4])
 
-		fig = plt.figure(c) 
-		
-		fig.suptitle(i, fontsize=16)
+		fig = plt.figure() 
+		Tit = 'B =  '
+		Tit += str(i)
+		print(Tit)
+		fig.suptitle(Tit, fontsize=16)
  
-		plt.subplot(121)
+		plt.subplot(131)
 		plt.plot(range(Nb_iter+1), S[0], c=col)
 		plt.xlabel('k')
 		plt.ylabel('lambda')
+		plt.title('a')
 
-		plt.subplot(122)
+		plt.subplot(132)
 		plt.plot(range(Nb_iter+1), S[1], c=col)
 		plt.yscale('log')
 		plt.xlabel('k')
 		plt.ylabel('log(|g|)')
-
+		plt.title('b')
+		plt.subplots_adjust(wspace=0.8)
 		c+= 1
 	
 	print('approxiamaton de a1 :		', S[3][-1] )
 	print('approxiamaton de a2 :		', S[4][-1] )
 	
-	fig = plt.figure(1) 
-
-	plt.plot(range(Nb_iter+1), F_end[0],label='b=0.01' ,c=(0, 0.5, 0.6) )
-	
+	plt.subplot(133)
+	plt.plot(range(6), F_end[0][0:6],label='b=0.01' ,c=(0, 0.5, 0.6) )
 	plt.ylabel( 'f')
 	plt.xlabel('k')
-	plt.legend() #adds a legend
-	mpl.rcParams['legend.fontsize'] = 10 #sets the legend font size
+	plt.title('c')
 	
 
 
@@ -642,6 +730,106 @@ if Which_question==16 :
 
 
 if Which_question==17 :
-	pass	
+	x= np.arange(0.1,0.3+0.01,0.01)
+	B = list(np.arange(0, 0.3, 0.01))
+	L_end  =[]
+	G_end = []
+	F_end = []
+	A1_end =[]
+	A2_end =[]
+	B_end = []
+	for i in B :
+		y=random_data_set2(x,2,3,i)
+		S =LM2 (x,y,1.5,1.5,0.001, 1, 50, 0.1)
+		SL= S[0][-1]*10**5
+		L_end.append (SL)
+		G_end.append (S[1][-1])
+		F_end.append(S[2][-1])
+		A1_end.append(S[3][-1])
+		A2_end.append(S[4][-1])
+		B_end.append(i)
+	dic = {
+	'B' : B_end,
+    'lambda': L_end,
+    'norm gradient':G_end,
+ 	'f(a_k)':F_end,
+ 	'a1 ':A1_end , 
+ 	'a2':A2_end    	
+	}
+	df = pd.DataFrame(dic)
+	print(df)
+
+
+
+	plt.figure(7)
+	plt.subplot(231)
+	plt.plot(B_end, L_end,'o-' , c=(0, 0.2, 0.6) )
+
+	plt.ylabel('lambda * e+5')
+
+	plt.subplot(232)	
+	plt.plot(B_end, G_end,'o-' ,c=(0, 0.4, 0.6))
+	plt.yscale('log')
+	plt.ylabel('log(|g|)')
+
+	plt.subplot(233)	
+	plt.plot(B_end, F_end, 'o-',c=(0, 0.6, 0.6))
+	plt.ylabel('f(a_k)')
+
+	plt.subplot(234)	
+	plt.plot(B_end, A1_end,'o-', c=(0, 0.8, 0.6))
+	plt.ylabel('a1')
+	plt.xlabel('b')
+
+	plt.subplot(235)	
+	plt.plot(B_end, A2_end,'o-', c=(0, 0.8, 0.6))
+	plt.ylabel('a2')
+	plt.xlabel('b')
+
+
+
+	Nb_iter = 30
+	B = [0.01, 0.1]
+	L_end  =[]
+	G_end = []
+	F_end = []
+	A1_end =[]
+	A2_end =[]
+	B_end = []
+	c =0
+	C = 0.2
+	for i in B :
+		col = (0, C, 0.6) 
+		C += 0.2
+
+		y=random_data_set2(x,2,3,i)
+		S =LM2 (x,y,1.5,1.5,0.001, 0 , Nb_iter, 0.001)
+		L_end.append (S[0])
+		G_end.append (S[1])
+		F_end.append(S[2])
+		A1_end.append(S[3])
+		A2_end.append(S[4])
+		fig = plt.figure(c) 
+		
+		fig.suptitle(i, fontsize=16)
+ 
+		plt.subplot(121)
+		plt.plot(range(Nb_iter+1), S[0], c=col)
+		
+		plt.xlabel('k')
+		plt.ylabel('lambda')
+
+		plt.subplot(122)
+		plt.plot(range(Nb_iter+1), S[1], c=col)
+		plt.yscale('log')
+		plt.xlabel('k')
+		plt.ylabel('|g|')
+		print('B = ', i, S[3][-1])
+
+		
+		
+		c+= 1
+		plt.show()
+	
 	
 		
