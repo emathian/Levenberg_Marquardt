@@ -215,28 +215,37 @@ def LM2 (x,y,a1, a2,l,cond, k, g):
 		v_grad = np.zeros((2,1)) 
 		v_grad[0][0] =  -1*(grad2(x,y,A1[-1],A2[-1])[0])
 		v_grad[1][0] =  -1*(grad2(x,y,A1[-1],A2[-1])[1])
-		dLM = np.dot( np.linalg.inv( derivative_2_f2(x,y,A1[-1], A2[-1] , L[-1]) ) , v_grad )	
-		next_f = cost_fucntion2(x,y, A1[-1] + dLM[0] , A2[-1] + dLM[1])
-		if next_f < F[-1] : 
-			# Update parameters' approximations
-			AA1 =  A1[-1] + dLM[0] 
-			AA2 = A2[-1] +dLM[1]
-			LL = L[-1]/10  # Update lambda toward Newton method
+		Inv_HLM =np.linalg.inv( derivative_2_f2(x,y,A1[-1], A2[-1] , L[-1]) )
+		EigenV = np.linalg.eig(Inv_HLM)[0]
+		
+		if EigenV[0] > 0 and EigenV[0]*EigenV[1]>0:
+			HLM_positive = True
 		else :
-			AA1  = A1[-1]
-			AA2  = A2[-1]
-			LL = L[-1]*10 # Update lambda toward Gradient descent method
+			HLM_positive = False
+		if HLM_positive==True :		
+			dLM = np.dot( np.linalg.inv( derivative_2_f2(x,y,A1[-1], A2[-1] , L[-1]) ) , v_grad )	
+			next_f = cost_fucntion2(x,y, A1[-1] + dLM[0] , A2[-1] + dLM[1])
+			if next_f < F[-1] : 
+				# Update parameters' approximations
+				AA1 =  A1[-1] + dLM[0] 
+				AA2 = A2[-1]  + dLM[1]
+				LL = L[-1]/10  # Update lambda toward Newton method
+			else :
+				AA1  = A1[-1]
+				AA2  = A2[-1]
+				LL = L[-1]*10 # Update lambda toward Gradient descent method
 	
-	# ADD LOOP'S RESULTS	
+		# ADD LOOP'S RESULTS	
 
-		L.append(LL)
-		G.append(GG)
-		F.append(next_f)
-		A1.append(AA1)
-		A2.append(AA2)
-		nb_iter +=1
-		c_stop = stop(cond,k,nb_iter,g,G[-1], F[-1], next_f)	
-			
+			L.append(LL)
+			G.append(GG)
+			F.append(next_f)
+			A1.append(AA1)
+			A2.append(AA2)
+			nb_iter +=1
+			c_stop = stop(cond,k,nb_iter,g,G[-1], F[-1], next_f)	
+		else :
+			break	
 	return L, G, F, A1 , A2 	
 
 
@@ -730,8 +739,8 @@ if Which_question==16 :
 
 
 if Which_question==17 :
-	x= np.arange(0.1,0.3+0.01,0.01)
-	B = list(np.arange(0, 0.3, 0.01))
+	x= np.arange(0,5,0.1)
+	B = list(np.arange(0, 0.1, 0.001))
 	L_end  =[]
 	G_end = []
 	F_end = []
@@ -740,7 +749,7 @@ if Which_question==17 :
 	B_end = []
 	for i in B :
 		y=random_data_set2(x,2,3,i)
-		S =LM2 (x,y,1.5,1.5,0.001, 1, 50, 0.1)
+		S =LM2 (x,y,1.5,1.5,0.001, 0, 100, 0.001)
 		SL= S[0][-1]*10**5
 		L_end.append (SL)
 		G_end.append (S[1][-1])
@@ -762,34 +771,43 @@ if Which_question==17 :
 
 
 	plt.figure(7)
-	plt.subplot(231)
-	plt.plot(B_end, L_end,'o-' , c=(0, 0.2, 0.6) )
+	# plt.subplot(231)
+	# plt.plot(B_end, L_end,'o-' , c=(0, 0.2, 0.6) )
 
-	plt.ylabel('lambda * e+5')
+	# plt.ylabel('lambda * e+5')
 
-	plt.subplot(232)	
+	plt.subplot(221)	
 	plt.plot(B_end, G_end,'o-' ,c=(0, 0.4, 0.6))
 	plt.yscale('log')
 	plt.ylabel('log(|g|)')
+	plt.xlabel('b')
+	plt.title('a')
 
-	plt.subplot(233)	
+	plt.subplot(222)	
 	plt.plot(B_end, F_end, 'o-',c=(0, 0.6, 0.6))
 	plt.ylabel('f(a_k)')
+	plt.xlabel('b')
+	plt.title('d')
+	plt.subplots_adjust(wspace = 0.2 )
 
-	plt.subplot(234)	
+	plt.subplot(223)	
 	plt.plot(B_end, A1_end,'o-', c=(0, 0.8, 0.6))
 	plt.ylabel('a1')
+	
 	plt.xlabel('b')
+	plt.title('d')
 
-	plt.subplot(235)	
+	plt.subplot(224)	
 	plt.plot(B_end, A2_end,'o-', c=(0, 0.8, 0.6))
 	plt.ylabel('a2')
+	
 	plt.xlabel('b')
+	plt.title('d')
 
 
 
 	Nb_iter = 30
-	B = [0.01, 0.1]
+	B = [0.0001 ]
 	L_end  =[]
 	G_end = []
 	F_end = []
@@ -803,7 +821,7 @@ if Which_question==17 :
 		C += 0.2
 
 		y=random_data_set2(x,2,3,i)
-		S =LM2 (x,y,1.5,1.5,0.001, 0 , Nb_iter, 0.001)
+		S =LM2 (x,y,1.5,1.5,0.001, 0, Nb_iter, 0.001)
 		L_end.append (S[0])
 		G_end.append (S[1])
 		F_end.append(S[2])
@@ -821,7 +839,7 @@ if Which_question==17 :
 
 		plt.subplot(122)
 		plt.plot(range(Nb_iter+1), S[1], c=col)
-		plt.yscale('log')
+		
 		plt.xlabel('k')
 		plt.ylabel('|g|')
 		print('B = ', i, S[3][-1])
@@ -830,6 +848,67 @@ if Which_question==17 :
 		
 		c+= 1
 		plt.show()
+
+if Which_question==18 :	
+	x= np.arange(0,5+0.01,0.01)
+	B = list(np.arange(0, 0.15, 0.02))
+	L_end  =[]
+	G_end = []
+	F_end = []
+	A1_end =[]
+	A2_end =[]
+	B_end = []
+
+	L1=[]
+	G1=[]
+	F1 =[]
+	A1 =[]
+
+
+	L2=[]
+	G2=[]
+	F2 =[]
+	A2 =[]
+
+	fig, axes = plt.subplots(nrows=len(B)/2, ncols=2,  sharex=True, sharey=True)
+	for i, ax in enumerate(axes.flatten()):
+
+
+		y=random_data_set2(x,2,3,B[i])
+		S =LM2 (x,y,1.5,1.5,0.001, 0, 1000, 0.01)
+		L_end.append (S[0][-1])
+		G_end.append (S[1][-1])
+		F_end.append(S[2][-1])
+		A1_end.append(S[3][-1])
+		A2_end.append(S[4][-1])
+		B_end.append(B[i])
+		y_fit = g2(x,S[3][-1],S[4][-1])
+		ax.scatter(x, y, s=0.6 )
+		ax.plot(x,g2(x,2,3), c='black')
+		ax.plot(x, y_fit, c='red')
+		
+		ax.set_title(B[i])
+
+
 	
+	plt.xlim(0,5)
+	plt.ylim(-0.05,0.1)
+	print('ok')
+	plt.show()
+
+
+	print(len(L_end))
+	dic = {
+	'B' : B_end,
+    'lambda': L_end,
+    'norm gradient':G_end,
+ 	'f(a_k)':F_end,
+ 	'a ':A_end    	
+	}
+	df = pd.DataFrame(dic)
+	print(df)
+
+	
+
 	
 		
