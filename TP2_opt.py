@@ -379,7 +379,7 @@ if Which_question==8:
 
 if Which_question==9:
 	x= np.arange(0,3+0.01,0.01)
-	B = [0.01]
+	B = [0.1]
 	L_end  =[]
 	G_end = []
 	F_end = []
@@ -392,8 +392,8 @@ if Which_question==9:
 		C += 0.2
 
 		y=random_data_set(x,2,i)
-		S =LM (x,y,1.5,0.001, 0 , 50, 0.001)
-		S[0] = S[0]
+		S =LM (x,y,1.5,0.001, 2 , 500, 0.000001)
+		
 		L_end.append (S[0])
 		G_end.append (S[1])
 		F_end.append(S[2])
@@ -404,12 +404,12 @@ if Which_question==9:
 		fig.suptitle(i, fontsize=16)
  
 		plt.subplot(121)
-		plt.plot(range(51), S[0], c=col)
+		plt.plot(range(len(S[0])), S[0], c=col)
 		plt.xlabel('k')
 		plt.ylabel('lambda')
 
 		plt.subplot(122)
-		plt.plot(range(51), S[1], c=col)
+		plt.plot(range(len(S[0])), S[1], c=col)
 		plt.yscale('log')
 		plt.xlabel('k')
 		plt.ylabel('|g|')
@@ -417,24 +417,24 @@ if Which_question==9:
 		c+= 1
 	
 	
-	fig = plt.figure(1) 
+	# fig = plt.figure(1) 
 
-	plt.plot(range(51), F_end[0],label='b=0.01' ,c=(0, 0.2, 0.6) )
-	plt.yscale('log')
-	plt.legend() #adds a legend
-	mpl.rcParams['legend.fontsize'] = 10 #sets the legend font size
+	# plt.plot(range(len(F_end[0])+1), F_end[0],label='b=0.01' ,c=(0, 0.2, 0.6) )
+	# plt.yscale('log')
+	# plt.legend() #adds a legend
+	# mpl.rcParams['legend.fontsize'] = 10 #sets the legend font size
 	
 
 
-	y_fit = g(x,S[3][-1])
+	# y_fit = g(x,S[3][-1])
 	
-	fig = plt.figure(2) 
-	plt.scatter(x, y)
-	plt.plot(x,g(x,2), c='black')
-	plt.plot(x, y_fit, c='red')
-	plt.xlabel('x')
-	plt.ylabel('y')
-	plt.ylim(-0.5,1.5)
+	# fig = plt.figure(2) 
+	# plt.scatter(x, y)
+	# plt.plot(x,g(x,2), c='black')
+	# plt.plot(x, y_fit, c='red')
+	# plt.xlabel('x')
+	# plt.ylabel('y')
+	# plt.ylim(-0.5,1.5)
 	plt.show()
 	
 	print(S[3])
@@ -749,7 +749,7 @@ if Which_question==17 :
 	B_end = []
 	for i in B :
 		y=random_data_set2(x,2,3,i)
-		S =LM2 (x,y,1.5,1.5,0.001, 0, 100, 0.001)
+		S =LM2 (x,y,1.5,1.5,0.001, 2, 100, 0.001)
 		SL= S[0][-1]*10**5
 		L_end.append (SL)
 		G_end.append (S[1][-1])
